@@ -391,7 +391,7 @@
     <div class="status-filters">
       <button class="sfilt active"       onclick="setStatusFilter('all',      this)">Tous</button>
       <button class="sfilt"              onclick="setStatusFilter('tested',   this)">✓ Testés</button>
-      <button class="sfilt"              onclick="setStatusFilter('untested', this)">○ À tester</button>
+      <button class="sfilt"              onclick="setStatusFilter('untested', this)">○ Non testés</button>
     </div>
     <div class="view-toggle">
       <button class="view-btn active" id="btn-map"  onclick="setView('map')">🗺 Carte</button>
@@ -407,7 +407,7 @@
 <!-- ══ STATS BAR ══ -->
 <div class="stats-bar">
   <div class="stat"><div class="stat-dot" style="background:var(--accent2)"></div><span><strong id="count-tested">0</strong> testés</span></div>
-  <div class="stat"><div class="stat-dot" style="background:var(--muted)"></div><span><strong id="count-untested">0</strong> à explorer</span></div>
+  <div class="stat"><div class="stat-dot" style="background:var(--muted)"></div><span><strong id="count-untested">0</strong> non testés</span></div>
   <div id="count-display"><strong id="count-showing">0</strong> affichés</div>
 </div>
 
@@ -461,7 +461,7 @@
         <div class="fp-chips" id="fp-status-chips">
           <button class="fp-chip active" data-val="all"      onclick="fpChipSelect(this,'status')">Tous</button>
           <button class="fp-chip"        data-val="tested"   onclick="fpChipSelect(this,'status')">✓ Testés</button>
-          <button class="fp-chip"        data-val="untested" onclick="fpChipSelect(this,'status')">○ À tester</button>
+          <button class="fp-chip"        data-val="untested" onclick="fpChipSelect(this,'status')">○ Non testés</button>
         </div>
       </div>
 
@@ -716,7 +716,7 @@ function buildPopup(r) {
     <div class="popup-header">
       <div class="popup-name">${r.nom}</div>
       <div class="popup-badges">
-        <span class="popup-badge ${tested?'badge-tested':'badge-untested'}">${tested?'✓ Testé & approuvé':'○ Non testé'}</span>
+        <span class="popup-badge ${tested?'badge-tested':'badge-untested'}">${tested?'✓ Testé & approuvé':'○ Non testés'}</span>
         ${r.origine ? `<span class="popup-badge badge-origine">🌍 ${r.origine}</span>` : ''}
         ${types.map(t=>`<span class="popup-badge badge-type">${t}</span>`).join('')}
         ${r.prix    ? `<span class="popup-badge badge-price">${r.prix}</span>` : ''}
@@ -746,7 +746,7 @@ function buildCard(r) {
   return `<div class="resto-card" id="card-${r._idx}" onclick="focusResto(${r._idx})">
     <div class="card-top">
       <div class="card-name">${r.nom}</div>
-      <span class="card-status ${tested?'status-tested':'status-untested'}">${tested?'✓ Testé':'○ À tester'}</span>
+      <span class="card-status ${tested?'status-tested':'status-untested'}">${tested?'✓ Testé':'○ Non testé'}</span>
     </div>
     <div class="card-meta">
       ${r.origine    ? `<span class="card-origine">🌍 ${r.origine}</span>` : ''}
