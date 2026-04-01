@@ -221,9 +221,18 @@
   .status-untested { background: #E8E0D0; color: var(--muted); }
 
   .card-meta { display: flex; gap: 8px; align-items: center; margin-bottom: 4px; flex-wrap: wrap; }
-  .card-type  { font-size: 11px; color: var(--muted); }
-  .card-price { font-size: 11px; color: var(--accent3); font-weight: 500; }
-  .card-stars { font-size: 11px; color: var(--accent3); letter-spacing: -1px; }
+  .card-type   { font-size: 11px; color: var(--muted); }
+  .card-origine{ font-size: 11px; color: var(--accent3); font-weight: 500; }
+  .card-price  { font-size: 11px; color: var(--accent3); font-weight: 500; }
+  .card-stars  { font-size: 11px; color: var(--accent3); letter-spacing: -1px; }
+  .card-tags   { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
+  .card-tag    { font-size: 10px; padding: 1px 6px; border-radius: 10px; }
+  .tag-halal-zabiha-cert { background: #D4EDDA; color: #1A5C33; }
+  .tag-halal-zabiha-sans { background: #D4EDDA; color: #2D8C4A; }
+  .tag-halal-halal-cert  { background: #E8F5E9; color: #5A9E6A; }
+  .tag-halal-halal-sans  { background: #E8E0D0; color: var(--muted); }
+  .tag-alcool  { background: #FDECEA; color: #C0392B; }
+  .tag-porc    { background: #FDECEA; color: #C0392B; }
 
   .card-reco {
     font-size: 11px; color: var(--ink2); font-style: italic; line-height: 1.4;
@@ -258,6 +267,13 @@
   .badge-untested { background: rgba(255,255,255,0.2); color: rgba(255,255,255,0.85); }
   .badge-type     { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
   .badge-price    { background: var(--accent3); color: var(--ink); }
+  .badge-halal-zabiha-cert { background: #1A5C33; color: white; }
+  .badge-halal-zabiha-sans { background: #2D8C4A; color: white; }
+  .badge-halal-halal-cert  { background: #5A9E6A; color: white; }
+  .badge-halal-halal-sans  { background: #7ABF8A; color: white; }
+  .badge-alcool   { background: #C0392B; color: white; }
+  .badge-porc     { background: #C0392B; color: white; }
+  .badge-origine  { background: rgba(200,168,75,0.25); color: var(--accent3); }
 
   .popup-body { padding: 11px 15px; background: var(--cream); }
   .popup-row { display: flex; align-items: flex-start; gap: 7px; margin-bottom: 7px; font-size: 12px; color: var(--ink2); }
@@ -284,7 +300,7 @@
 <body>
 
 <header>
-  <div class="logo">🕌 Halal<span>Restaurant</span></div>
+  <div class="logo">Halal<span>Restaurant</span></div>
   <div class="header-filters">
     <button class="filter-btn active"       onclick="setStatusFilter('all', this)">Tous</button>
     <button class="filter-btn"              onclick="setStatusFilter('tested', this)">✓ Testés</button>
@@ -330,6 +346,25 @@
         </select>
       </div>
 
+      <div class="dropdowns">
+        <select class="dd" id="dd-origine" onchange="applyFilters()">
+          <option value="">🌍 Origine</option>
+        </select>
+        <select class="dd" id="dd-halal" onchange="applyFilters()">
+          <option value="">☪ Halal</option>
+          <option value="zabiha-cert">Zabiha avec certificat</option>
+          <option value="zabiha-sans">Zabiha sans certificat</option>
+          <option value="halal-cert">Halal avec certificat</option>
+          <option value="halal-sans">Halal sans certificat</option>
+        </select>
+        <select class="dd" id="dd-restrictions" onchange="applyFilters()">
+          <option value="">🚫 Restrictions</option>
+          <option value="no-alcool">Sans alcool</option>
+          <option value="no-porc">Sans porc</option>
+          <option value="no-both">Sans alcool & porc</option>
+        </select>
+      </div>
+
     </div>
     <div id="restaurant-list"></div>
   </aside>
@@ -351,13 +386,10 @@ const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTntIbPkm
 // DONNÉES DÉMO
 // ══════════════════════════════════════════════
 const DEMO_DATA = [
-  { nom: "Al-Taïb", adresse: "3050 Boul. de la Concorde E, Laval", lat: 45.5720, lng: -73.7050, type: "Libanais", statut: "testé", note: "5", prix: "$$", recommandation: "Meilleur shawarma de Laval. La sauce à l'ail est incroyable.", instagram: "", gmaps: "https://maps.google.com?q=Al+Taib+Laval" },
-  { nom: "Bombay Mahal", adresse: "1001 Rue Jean-Talon O, Montréal", lat: 45.5246, lng: -73.6270, type: "Indien", statut: "testé", note: "4", prix: "$", recommandation: "Curry agneau exceptionnel. BYO — apportez votre vin.", instagram: "", gmaps: "https://maps.google.com?q=Bombay+Mahal+Montreal" },
-  { nom: "Satay Brothers", adresse: "3721 Notre-Dame O, Montréal", lat: 45.4849, lng: -73.5774, type: "Asiatique", statut: "testé", note: "5", prix: "$$", recommandation: "Laksa et satay fumé — les deux meilleurs plats.", instagram: "https://instagram.com/sataybrothers", gmaps: "https://maps.google.com?q=Satay+Brothers+Montreal" },
-  { nom: "Hinnawi Brothers", adresse: "2505 Boul. Daniel-Johnson, Laval", lat: 45.5660, lng: -73.7420, type: "Libanais", statut: "non testé", note: "", prix: "$$", recommandation: "", instagram: "", gmaps: "https://maps.google.com?q=Hinnawi+Brothers+Laval" },
-  { nom: "Istanbul Express", adresse: "5765 Côte-des-Neiges, Montréal", lat: 45.4975, lng: -73.6260, type: "Turc", statut: "testé", note: "4", prix: "$", recommandation: "Doner kebab généreux, service rapide.", instagram: "", gmaps: "https://maps.google.com?q=Istanbul+Express+Montreal" },
-  { nom: "Cuisine Bangkok", adresse: "88 Boul. Saint-Martin O, Laval", lat: 45.5601, lng: -73.7480, type: "Thaïlandais", statut: "non testé", note: "", prix: "$$", recommandation: "", instagram: "", gmaps: "https://maps.google.com?q=Cuisine+Bangkok+Laval" },
-  { nom: "Le Marrakech", adresse: "1205 Boul. Chomedey, Laval", lat: 45.5510, lng: -73.7610, type: "Marocain", statut: "testé", note: "5", prix: "$$$", recommandation: "Tajine d'agneau aux pruneaux parfait. Ambiance exceptionnelle.", instagram: "", gmaps: "https://maps.google.com?q=Le+Marrakech+Laval" },
+  { nom: "Al-Taïb", adresse: "3050 Boul. de la Concorde E, Laval", lat: 45.5720, lng: -73.7050, origine: "Moyen-Orient", type1: "Döner", type2: "Shawarma", type3: "", statut: "testé", note: "5", prix: "$$", halal: "Zabiha halal avec certificat", alcool: "Non", porc: "Non", recommandation: "Meilleur shawarma de Laval. La sauce à l'ail est incroyable.", reseau: "", gmaps: "https://maps.google.com?q=Al+Taib+Laval" },
+  { nom: "Bombay Mahal", adresse: "1001 Rue Jean-Talon O, Montréal", lat: 45.5246, lng: -73.6270, origine: "Asie du Sud", type1: "Curry", type2: "", type3: "", statut: "testé", note: "4", prix: "$", halal: "Halal avec certificat", alcool: "Non", porc: "Non", recommandation: "Curry agneau exceptionnel. BYO — apportez votre vin.", reseau: "", gmaps: "https://maps.google.com?q=Bombay+Mahal+Montreal" },
+  { nom: "Hinnawi Brothers", adresse: "2505 Boul. Daniel-Johnson, Laval", lat: 45.5660, lng: -73.7420, origine: "Moyen-Orient", type1: "Libanais", type2: "", type3: "", statut: "non testé", note: "", prix: "$$", halal: "Halal sans certificat", alcool: "Non", porc: "Non", recommandation: "", reseau: "", gmaps: "https://maps.google.com?q=Hinnawi+Brothers+Laval" },
+  { nom: "Le Marrakech", adresse: "1205 Boul. Chomedey, Laval", lat: 45.5510, lng: -73.7610, origine: "Afrique du Nord", type1: "Tajine", type2: "Couscous", type3: "", statut: "testé", note: "5", prix: "$$$", halal: "Zabiha halal avec certificat", alcool: "Non", porc: "Non", recommandation: "Tajine d'agneau aux pruneaux parfait. Ambiance exceptionnelle.", reseau: "", gmaps: "https://maps.google.com?q=Le+Marrakech+Laval" },
 ];
 
 // ══════════════════════════════════════════════
@@ -386,28 +418,52 @@ function makeIcon(tested) {
 }
 
 function starsHTML(note) {
-  const n = Math.min(5, parseInt(note) || 0);
+  const n = Math.min(5, Math.round(parseFloat(note) || 0));
   return '★'.repeat(n) + '☆'.repeat(5 - n);
+}
+
+function halalClass(halal) {
+  const h = (halal || '').toLowerCase();
+  if (h.includes('zabiha') && h.includes('avec')) return 'zabiha-cert';
+  if (h.includes('zabiha') && h.includes('sans')) return 'zabiha-sans';
+  if (h.includes('zabiha'))                        return 'zabiha-cert'; // zabiha sans précision → on assume avec cert
+  if (h.includes('avec'))                          return 'halal-cert';
+  if (h.includes('sans'))                          return 'halal-sans';
+  return 'halal-sans';
+}
+
+function halalLabel(halal) {
+  return halal || 'Halal';
 }
 
 function buildPopup(r) {
   const tested = r.statut === 'testé';
+  const hClass = halalClass(r.halal);
+  const types  = [r.type1, r.type2, r.type3].filter(Boolean);
+  const alcoolOui = (r.alcool || '').toLowerCase() === 'oui';
+  const porcOui   = (r.porc  || '').toLowerCase() === 'oui';
   return `<div class="popup-inner">
     <div class="popup-header">
       <div class="popup-name">${r.nom}</div>
       <div class="popup-badges">
         <span class="popup-badge ${tested ? 'badge-tested' : 'badge-untested'}">${tested ? '✓ Testé & approuvé' : '○ Non testé'}</span>
-        ${r.type  ? `<span class="popup-badge badge-type">${r.type}</span>` : ''}
-        ${r.prix  ? `<span class="popup-badge badge-price">${r.prix}</span>` : ''}
+        ${r.origine  ? `<span class="popup-badge badge-origine">🌍 ${r.origine}</span>` : ''}
+        ${types.length ? types.map(t => `<span class="popup-badge badge-type">${t}</span>`).join('') : ''}
+        ${r.prix     ? `<span class="popup-badge badge-price">${r.prix}</span>` : ''}
       </div>
     </div>
     <div class="popup-body">
-      ${r.adresse       ? `<div class="popup-row"><span class="popup-icon">📍</span><span>${r.adresse}</span></div>` : ''}
-      ${r.note          ? `<div class="popup-row"><span class="popup-icon">⭐</span><span class="popup-stars">${starsHTML(r.note)}</span></div>` : ''}
-      ${r.recommandation? `<div class="popup-reco">"${r.recommandation}"</div>` : ''}
-      ${(r.gmaps || r.instagram) ? `<div class="popup-actions">
-        ${r.gmaps     ? `<a class="popup-btn btn-gmaps" href="${r.gmaps}" target="_blank">🗺 Ouvrir dans Maps</a>` : ''}
-        ${r.instagram ? `<a class="popup-btn btn-insta" href="${r.instagram}" target="_blank">📸 Instagram</a>` : ''}
+      ${r.adresse ? `<div class="popup-row"><span class="popup-icon">📍</span><span>${r.adresse}</span></div>` : ''}
+      ${r.note    ? `<div class="popup-row"><span class="popup-icon">⭐</span><span class="popup-stars">${starsHTML(r.note)}</span></div>` : ''}
+      ${r.halal   ? `<div class="popup-row"><span class="popup-icon">☪</span><span class="popup-badge badge-halal-${hClass}" style="font-size:10px;padding:2px 8px;border-radius:20px;">${halalLabel(r.halal)}</span></div>` : ''}
+      ${(alcoolOui || porcOui) ? `<div class="popup-row"><span class="popup-icon">⚠️</span><span style="font-size:11px;color:#C0392B;">
+        ${alcoolOui ? '🍷 Alcool servi' : ''} ${alcoolOui && porcOui ? '·' : ''} ${porcOui ? '🐷 Porc au menu' : ''}
+      </span></div>` : ''}
+      ${(!alcoolOui && !porcOui) ? `<div class="popup-row"><span class="popup-icon">✅</span><span style="font-size:11px;color:var(--green-dk);">Sans alcool · Sans porc</span></div>` : ''}
+      ${r.recommandation ? `<div class="popup-reco">"${r.recommandation}"</div>` : ''}
+      ${(r.gmaps || r.reseau) ? `<div class="popup-actions">
+        ${r.gmaps  ? `<a class="popup-btn btn-gmaps" href="${r.gmaps}" target="_blank">🗺 Ouvrir dans Maps</a>` : ''}
+        ${r.reseau ? `<a class="popup-btn btn-insta" href="${r.reseau}" target="_blank">📸 Réseau social</a>` : ''}
       </div>` : ''}
     </div>
   </div>`;
@@ -415,15 +471,25 @@ function buildPopup(r) {
 
 function buildCard(r) {
   const tested = r.statut === 'testé';
+  const hClass = halalClass(r.halal);
+  const types  = [r.type1, r.type2, r.type3].filter(Boolean);
+  const alcoolOui = (r.alcool || '').toLowerCase() === 'oui';
+  const porcOui   = (r.porc  || '').toLowerCase() === 'oui';
   return `<div class="resto-card" id="card-${r._idx}" onclick="focusResto(${r._idx})">
     <div class="card-top">
       <div class="card-name">${r.nom}</div>
       <span class="card-status ${tested ? 'status-tested' : 'status-untested'}">${tested ? '✓ Testé' : '○ À tester'}</span>
     </div>
     <div class="card-meta">
-      ${r.type ? `<span class="card-type">🍽 ${r.type}</span>` : ''}
+      ${r.origine ? `<span class="card-origine">🌍 ${r.origine}</span>` : ''}
+      ${types.length ? `<span class="card-type">🍽 ${types.join(' · ')}</span>` : ''}
       ${r.prix ? `<span class="card-price">${r.prix}</span>` : ''}
       ${r.note ? `<span class="card-stars">${starsHTML(r.note)}</span>` : ''}
+    </div>
+    <div class="card-tags">
+      ${r.halal ? `<span class="card-tag tag-halal-${hClass}">☪ ${halalLabel(r.halal)}</span>` : ''}
+      ${alcoolOui ? `<span class="card-tag tag-alcool">🍷 Alcool</span>` : ''}
+      ${porcOui   ? `<span class="card-tag tag-porc">🐷 Porc</span>`    : ''}
     </div>
     ${r.recommandation ? `<div class="card-reco">${r.recommandation}</div>` : ''}
   </div>`;
@@ -475,18 +541,44 @@ function setStatusFilter(type, btn) {
 }
 
 function applyFilters() {
-  const q       = document.getElementById('search-input').value.toLowerCase();
-  const type    = document.getElementById('dd-type').value;
-  const prix    = document.getElementById('dd-prix').value;
-  const noteMin = parseInt(document.getElementById('dd-note').value) || 0;
+  const q            = document.getElementById('search-input').value.toLowerCase();
+  const type         = document.getElementById('dd-type').value;
+  const prix         = document.getElementById('dd-prix').value;
+  const noteMin      = parseFloat(document.getElementById('dd-note').value) || 0;
+  const origine      = document.getElementById('dd-origine').value;
+  const halalFilter  = document.getElementById('dd-halal').value;
+  const restrictions = document.getElementById('dd-restrictions').value;
 
   const filtered = allRestaurants.filter(r => {
     if (statusFilter === 'tested'   && r.statut !== 'testé') return false;
     if (statusFilter === 'untested' && r.statut === 'testé') return false;
-    if (type    && (r.type || '').toLowerCase() !== type.toLowerCase()) return false;
-    if (prix    && r.prix !== prix) return false;
-    if (noteMin && (parseInt(r.note) || 0) < noteMin) return false;
-    if (q && !`${r.nom} ${r.type} ${r.adresse} ${r.recommandation}`.toLowerCase().includes(q)) return false;
+
+    // Filtre type (cherche dans type1, type2, type3)
+    if (type) {
+      const allTypes = [r.type1, r.type2, r.type3].map(t => (t||'').toLowerCase());
+      if (!allTypes.includes(type.toLowerCase())) return false;
+    }
+
+    if (prix   && r.prix !== prix) return false;
+    if (noteMin && (parseFloat(r.note) || 0) < noteMin) return false;
+    if (origine && (r.origine || '').toLowerCase() !== origine.toLowerCase()) return false;
+
+    // Filtre halal
+    if (halalFilter) {
+      const hc = halalClass(r.halal);
+      if (halalFilter !== hc) return false;
+    }
+
+    // Filtre restrictions
+    if (restrictions) {
+      const noAlcool = (r.alcool || '').toLowerCase() !== 'oui';
+      const noPorc   = (r.porc   || '').toLowerCase() !== 'oui';
+      if (restrictions === 'no-alcool' && !noAlcool) return false;
+      if (restrictions === 'no-porc'   && !noPorc)   return false;
+      if (restrictions === 'no-both'   && (!noAlcool || !noPorc)) return false;
+    }
+
+    if (q && !`${r.nom} ${r.type1} ${r.type2} ${r.type3} ${r.origine} ${r.adresse} ${r.recommandation}`.toLowerCase().includes(q)) return false;
     return true;
   });
 
@@ -528,12 +620,21 @@ document.getElementById('postal-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') searchByPostal();
 });
 
-// ── Type dropdown ──
-function populateTypeDropdown() {
-  const types = [...new Set(allRestaurants.map(r => r.type).filter(Boolean))].sort();
-  const dd = document.getElementById('dd-type');
-  dd.innerHTML = `<option value="">🍽 Tous types</option>` +
+// ── Type & Origine dropdowns ──
+function populateDropdowns() {
+  // Types: collecte unique de type1, type2, type3
+  const types = [...new Set(
+    allRestaurants.flatMap(r => [r.type1, r.type2, r.type3]).filter(Boolean)
+  )].sort();
+  const ddType = document.getElementById('dd-type');
+  ddType.innerHTML = `<option value="">🍽 Tous types</option>` +
     types.map(t => `<option value="${t}">${t}</option>`).join('');
+
+  // Origines
+  const origines = [...new Set(allRestaurants.map(r => r.origine).filter(Boolean))].sort();
+  const ddOrigine = document.getElementById('dd-origine');
+  ddOrigine.innerHTML = `<option value="">🌍 Origine</option>` +
+    origines.map(o => `<option value="${o}">${o}</option>`).join('');
 }
 
 // ── Stats ──
@@ -549,22 +650,40 @@ function parseCSV(text) {
   const lines   = text.trim().split('\n');
   if (lines.length < 2) return [];
   const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
+
   return lines.slice(1).map((line, i) => {
-    const vals = line.match(/(".*?"|[^,]+|(?<=,)(?=,)|^(?=,)|(?<=,)$)/g) || [];
-    const obj  = {};
-    headers.forEach((h, j) => { obj[h] = (vals[j] || '').trim().replace(/^"|"$/g, ''); });
+    // Parseur CSV robuste (gère les virgules dans les guillemets)
+    const vals = [];
+    let cur = '', inQ = false;
+    for (let ci = 0; ci < line.length; ci++) {
+      const ch = line[ci];
+      if (ch === '"') { inQ = !inQ; }
+      else if (ch === ',' && !inQ) { vals.push(cur.trim()); cur = ''; }
+      else { cur += ch; }
+    }
+    vals.push(cur.trim());
+
+    const obj = {};
+    headers.forEach((h, j) => { obj[h] = (vals[j] || '').replace(/^"|"$/g, '').trim(); });
+
     return {
-      _idx: i,
+      _idx:           i,
       nom:            obj['nom'] || obj['name'] || '',
       adresse:        obj['adresse'] || obj['address'] || '',
       lat:            parseFloat(obj['latitude'] || obj['lat']) || 0,
       lng:            parseFloat(obj['longitude'] || obj['lng'] || obj['lon']) || 0,
-      type:           obj['type'] || obj['type de cuisine'] || obj['cuisine'] || '',
+      origine:        obj['origine'] || obj['origin'] || '',
+      type1:          obj['produit_type1'] || obj['type'] || obj['cuisine'] || '',
+      type2:          obj['produit_type2'] || '',
+      type3:          obj['produit_type3'] || '',
       statut:         (obj['statut'] || obj['status'] || '').toLowerCase(),
       note:           obj['note'] || obj['rating'] || '',
       prix:           obj['prix'] || obj['price'] || '',
+      halal:          obj['halal'] || '',
+      alcool:         obj['alcool'] || '',
+      porc:           obj['porc'] || '',
       recommandation: obj['recommandation'] || obj['recommendation'] || '',
-      instagram:      obj['instagram'] || obj['lien instagram'] || '',
+      reseau:         obj['reseau'] || obj['instagram'] || obj['lien instagram'] || '',
       gmaps:          obj['gmaps'] || obj['lien google maps'] || obj['google maps'] ||
                       `https://maps.google.com?q=${encodeURIComponent(obj['adresse'] || obj['nom'] || '')}`,
     };
@@ -586,7 +705,7 @@ async function loadData() {
     allRestaurants = DEMO_DATA.map((r, i) => ({ ...r, _idx: i }));
   }
   updateStats();
-  populateTypeDropdown();
+  populateDropdowns();
   applyFilters();
 }
 
