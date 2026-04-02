@@ -263,6 +263,18 @@ header::after {
 .sfilt:hover { color: var(--ink2); background: var(--sand3); }
 .sfilt.active { background: var(--green); color: white; border-color: var(--green); }
 .sfilt.active-gold { background: var(--gold); color: white; border-color: var(--gold); }
+.sfilt-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.12);
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  margin-left: 3px;
+}
+.sfilt.active .sfilt-count, .sfilt.active-gold .sfilt-count { background: rgba(255,255,255,0.25); }
 
 .status-bar-divider {
   width: 1px;
@@ -278,7 +290,6 @@ header::after {
   flex-shrink: 0;
 }
 .stat-pill strong { color: var(--ink2); font-weight: 600; }
-#count-showing-wrap { margin-left: auto; flex-shrink: 0; }
 
 /* ══════════════════════════════════════════════════
    MAIN
@@ -288,46 +299,6 @@ header::after {
 /* MAP */
 #map { position: absolute; inset: 0; z-index: 1; }
 
-/* Postal locator float */
-.postal-float {
-  position: absolute;
-  bottom: 44px;
-  right: 60px;
-  z-index: 50;
-  display: flex;
-  gap: 6px;
-}
-.postal-float input {
-  font-family: var(--font-body);
-  font-size: 13px;
-  padding: 9px 13px;
-  border-radius: 10px;
-  border: 1.5px solid var(--border);
-  background: white;
-  color: var(--ink);
-  outline: none;
-  box-shadow: 0 4px 16px var(--shadow);
-  text-transform: uppercase;
-  width: 150px;
-  transition: border-color 0.15s;
-}
-.postal-float input::placeholder { text-transform: none; color: #bbb; }
-.postal-float input:focus { border-color: var(--green); }
-.postal-btn {
-  font-family: var(--font-body);
-  font-size: 12px;
-  font-weight: 600;
-  padding: 9px 14px;
-  border-radius: 10px;
-  border: none;
-  background: var(--green);
-  color: white;
-  cursor: pointer;
-  transition: background 0.15s;
-  box-shadow: 0 4px 16px var(--shadow);
-  white-space: nowrap;
-}
-.postal-btn:hover { background: var(--green2); }
 
 /* ══════════════════════════════════════════════════
    LIST VIEW
@@ -787,8 +758,6 @@ header::after {
   .header-mid { order: 3; width: 100%; padding-bottom: 4px; }
   .surprise-btn { display: none; }
   .filter-panel { width: 100%; }
-  .postal-float { bottom: 12px; right: 8px; left: 8px; }
-  .postal-float input { flex: 1; width: auto; }
   .list-grid { grid-template-columns: 1fr; padding: 12px; gap: 10px; }
   .card-name { font-size: 16px; }
 }
@@ -823,15 +792,8 @@ header::after {
 <!-- ═══ STATUS BAR ═══ -->
 <div class="status-bar">
   <button class="sfilt active"     onclick="setStatusFilter('all',      this)">Tous</button>
-  <button class="sfilt"            onclick="setStatusFilter('tested',   this)">✓ Testés</button>
-  <button class="sfilt"            onclick="setStatusFilter('untested', this)">○ Non testés</button>
-  <div class="status-bar-divider"></div>
-  <div class="stat-pill"><strong id="count-tested">0</strong> testés</div>
-  <div class="stat-pill">·</div>
-  <div class="stat-pill"><strong id="count-untested">0</strong> non testés</div>
-  <div class="stat-pill" id="count-showing-wrap">
-    <strong id="count-showing">0</strong> affiché<span id="count-plural"></span>
-  </div>
+  <button class="sfilt"            onclick="setStatusFilter('tested',   this)">✓ Testés <span id="count-tested" class="sfilt-count">0</span></button>
+  <button class="sfilt"            onclick="setStatusFilter('untested', this)">○ Non testés <span id="count-untested" class="sfilt-count">0</span></button>
 </div>
 
 <!-- ═══ MAIN ═══ -->
@@ -840,11 +802,6 @@ header::after {
   <!-- Carte -->
   <div id="map"></div>
 
-  <!-- Code postal -->
-  <div class="postal-float">
-    <input type="text" id="postal-input" placeholder="Code postal…" maxlength="7">
-    <button class="postal-btn" onclick="searchByPostal()">📍 Localiser</button>
-  </div>
 
   <!-- Liste -->
   <div id="list-view">
@@ -953,7 +910,7 @@ header::after {
 // ══════════════════════════════════════════
 const MAP_CENTER    = [45.5553, -73.7692];
 const MAP_ZOOM      = 12;
-const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTntIbPkm8M9tITIJ6J_LCbmnP_pzOwCYHiby3DLCJqT5ZNmdLkovYd5zb1cX8S3nf90tj3MGiO7HRH/pub?gid=2108723628&single=true&output=csv';
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTntIbPkm8M9tITIJ6J_LCbmnP_pzOwCYHiby3DLCJqT5ZNmdLkovYd5zb1cX8S3nf90tj3MGiO7HRH/pub?gid=219820146&single=true&output=csv';
 
 // ══════════════════════════════════════════
 // DEMO DATA (fallback)
@@ -970,7 +927,6 @@ const DEMO = [
 // ══════════════════════════════════════════
 let all      = [];
 let markers  = {};
-let postalMk = null;
 let view     = 'map';
 const fp = { status:'all', origine:'', type:'', prix:'', note:'', halal:'', restrictions:'' };
 
@@ -1101,9 +1057,6 @@ function renderList(data) {
         <div class="no-results-msg">Aucun restaurant trouvé</div>
         <div class="no-results-sub">Essayez d'ajuster vos filtres ou votre recherche</div>
       </div>`;
-  const n = data.length;
-  document.getElementById('count-showing').textContent = n;
-  document.getElementById('count-plural').textContent   = n > 1 ? 's' : '';
 }
 
 function renderMarkers(data) {
@@ -1273,24 +1226,6 @@ function applyFilters() {
 // ══════════════════════════════════════════
 // CODE POSTAL
 // ══════════════════════════════════════════
-async function searchByPostal() {
-  const raw = document.getElementById('postal-input').value.trim();
-  if (!raw) return;
-  const postal = raw.toUpperCase().replace(/\s/g,'').replace(/^(.{3})(.{3})$/,'$1 $2');
-  try {
-    const res  = await fetch(`https://nominatim.openstreetmap.org/search?format=json&countrycodes=ca&q=${encodeURIComponent(postal)}&limit=1`, { headers:{'Accept-Language':'fr'} });
-    const data = await res.json();
-    if (!data.length) { showToast(`Code postal "${postal}" introuvable.`); return; }
-    const lat=parseFloat(data[0].lat), lng=parseFloat(data[0].lon);
-    if (postalMk) map.removeLayer(postalMk);
-    postalMk = L.circleMarker([lat,lng],{radius:12,fillColor:'#C9973A',color:'white',weight:3,opacity:1,fillOpacity:0.95})
-      .addTo(map).bindPopup(`<div style="font-family:var(--font-body);font-size:13px;padding:4px 2px"><b>📍 ${postal}</b><br><small style="color:#888">Votre position</small></div>`);
-    setView('map');
-    map.setView([lat,lng],14,{animate:true});
-    postalMk.openPopup();
-  } catch(e) { showToast('Erreur de géolocalisation.'); }
-}
-document.getElementById('postal-input').addEventListener('keydown', e=>{ if(e.key==='Enter') searchByPostal(); });
 
 // ══════════════════════════════════════════
 // DROPDOWNS
@@ -1309,8 +1244,6 @@ function updateStats() {
   const tested = all.filter(r=>r.statut==='testé').length;
   document.getElementById('count-tested').textContent   = tested;
   document.getElementById('count-untested').textContent = all.length - tested;
-  document.getElementById('count-showing').textContent  = all.length;
-  document.getElementById('count-plural').textContent   = all.length > 1 ? 's' : '';
 }
 
 // ══════════════════════════════════════════
