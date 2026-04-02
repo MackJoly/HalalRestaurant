@@ -3,453 +3,862 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HalalRestaurant</title>
+<title>HalalSpot — Restaurants Halal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,700&family=Outfit:wght@300;400;500;600&display=swap">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
-  :root {
-    --cream:    #F5F0E4;
-    --cream2:   #EDE6D0;
-    --ink:      #1A2E1A;
-    --ink2:     #2C3E2C;
-    --muted:    #7A8C72;
-    --accent:   #1a381a;
-    --accent2:  #4A8C4A;
-    --accent3:  #C8A84B;
-    --green-lt: #D4EDDA;
-    --green-dk: #1A5C33;
-    --border:   #D0C8AA;
-  }
+/* ══════════════════════════════════════════════════
+   TOKENS
+══════════════════════════════════════════════════ */
+:root {
+  --sand:      #F7F2E8;
+  --sand2:     #EDE6D5;
+  --sand3:     #E0D8C4;
+  --ink:       #1C1A16;
+  --ink2:      #3D3929;
+  --muted:     #8A8272;
+  --gold:      #C9973A;
+  --gold2:     #E5B84A;
+  --green:     #2A5C3F;
+  --green2:    #3D7A57;
+  --green-lt:  #D6EDDF;
+  --green-dk:  #1A4A2E;
+  --red-lt:    #FDECEA;
+  --red:       #C0392B;
+  --border:    #D5CCBA;
+  --shadow:    rgba(28,26,22,0.12);
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body:    'Outfit', system-ui, sans-serif;
+}
 
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--cream);
-    color: var(--ink);
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
+/* ══════════════════════════════════════════════════
+   RESET & BASE
+══════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* ══ HEADER ══ */
-  header {
-    background: var(--accent);
-    color: var(--cream);
-    padding: 0 20px;
-    height: 52px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 3px solid var(--accent3);
-    position: relative;
-    z-index: 1100;
-    flex-shrink: 0;
-    gap: 12px;
-  }
+body {
+  font-family: var(--font-body);
+  background: var(--sand);
+  color: var(--ink);
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 
-  .logo {
-    font-family: 'Playfair Display', serif;
-    font-size: 19px;
-    font-weight: 700;
-    color: var(--cream);
-    white-space: nowrap;
-  }
-  .logo span { color: var(--accent3); }
+/* Grain texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 200px;
+}
 
-  .header-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+/* ══════════════════════════════════════════════════
+   HEADER
+══════════════════════════════════════════════════ */
+header {
+  background: var(--green);
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 14px;
+  border-bottom: 2px solid rgba(201,151,58,0.5);
+  position: relative;
+  z-index: 1100;
+  flex-shrink: 0;
+}
 
-  /* Status quick filters */
-  .status-filters { display: flex; gap: 4px; }
-  .sfilt {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 11px; font-weight: 500;
-    padding: 4px 10px;
-    border-radius: 20px;
-    border: 1px solid rgba(245,240,228,0.2);
-    background: transparent;
-    color: rgba(245,240,228,0.65);
-    cursor: pointer;
-    transition: all 0.15s;
-    white-space: nowrap;
-  }
-  .sfilt:hover { background: rgba(255,255,255,0.1); color: var(--cream); }
-  .sfilt.active       { background: var(--accent3); color: var(--ink); border-color: var(--accent3); }
-  .sfilt.active-green { background: var(--accent2); color: white; border-color: var(--accent2); }
+/* Arabesk pattern in header */
+header::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.06;
+  background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-rule='evenodd'%3E%3Ccircle cx='20' cy='20' r='2'/%3E%3Ccircle cx='0' cy='0' r='2'/%3E%3Ccircle cx='40' cy='0' r='2'/%3E%3Ccircle cx='0' cy='40' r='2'/%3E%3Ccircle cx='40' cy='40' r='2'/%3E%3Cpath d='M20 8 L24 16 L32 16 L26 22 L28 30 L20 26 L12 30 L14 22 L8 16 L16 16 Z' fill='none' stroke='%23ffffff' stroke-width='0.5'/%3E%3C/g%3E%3C/svg%3E");
+}
 
-  /* View toggle */
-  .view-toggle {
-    display: flex;
-    background: rgba(255,255,255,0.1);
-    border-radius: 8px;
-    padding: 3px;
-    gap: 2px;
-  }
-  .view-btn {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 12px; font-weight: 500;
-    padding: 5px 12px;
-    border-radius: 6px;
-    border: none;
-    background: transparent;
-    color: rgba(245,240,228,0.65);
-    cursor: pointer;
-    transition: all 0.15s;
-    white-space: nowrap;
-    display: flex; align-items: center; gap: 5px;
-  }
-  .view-btn.active { background: white; color: var(--accent); }
-  .view-btn:not(.active):hover { background: rgba(255,255,255,0.15); color: var(--cream); }
+.logo {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  position: relative;
+  z-index: 1;
+}
+.logo em {
+  font-style: italic;
+  color: var(--gold2);
+  font-weight: 300;
+}
 
-  /* Filter trigger */
-  .filter-trigger {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 12px; font-weight: 500;
-    padding: 6px 13px;
-    border-radius: 8px;
-    border: 1px solid rgba(245,240,228,0.3);
-    background: transparent;
-    color: rgba(245,240,228,0.85);
-    cursor: pointer;
-    transition: all 0.15s;
-    display: flex; align-items: center; gap: 6px;
-    white-space: nowrap;
-  }
-  .filter-trigger:hover { background: rgba(255,255,255,0.12); border-color: rgba(245,240,228,0.5); color: white; }
-  .filter-trigger.has-filters { border-color: var(--accent3); color: var(--accent3); }
-  .filter-badge {
-    background: var(--accent3); color: var(--ink);
-    font-size: 10px; font-weight: 700;
-    min-width: 16px; height: 16px;
-    border-radius: 8px;
-    padding: 0 4px;
-    display: none; align-items: center; justify-content: center;
-  }
-  .filter-trigger.has-filters .filter-badge { display: flex; }
+.header-mid {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
 
-  /* ══ STATS BAR ══ */
-  .stats-bar {
-    background: var(--cream2);
-    border-bottom: 1px solid var(--border);
-    padding: 5px 20px;
-    display: flex; gap: 16px; align-items: center;
-    font-size: 11.5px; color: var(--muted);
-    flex-shrink: 0; z-index: 10;
-  }
-  .stat { display: flex; align-items: center; gap: 5px; }
-  .stat-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-  .stat strong { color: var(--ink2); font-weight: 500; }
-  #count-display { margin-left: auto; font-style: italic; font-size: 11px; }
+.header-search {
+  display: flex;
+  align-items: center;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 10px;
+  padding: 0 12px;
+  gap: 8px;
+  width: min(400px, 100%);
+  transition: background 0.2s, border-color 0.2s;
+}
+.header-search:focus-within {
+  background: rgba(255,255,255,0.2);
+  border-color: rgba(255,255,255,0.4);
+}
+.header-search .s-icon { color: rgba(255,255,255,0.5); font-size: 13px; }
+.header-search input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: white;
+  padding: 9px 0;
+}
+.header-search input::placeholder { color: rgba(255,255,255,0.4); }
 
-  /* ══ MAIN ══ */
-  .main { flex: 1; position: relative; overflow: hidden; }
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
 
-  /* Map */
-  #map { position: absolute; inset: 0; z-index: 1; }
+/* View toggle */
+.view-toggle {
+  display: flex;
+  background: rgba(0,0,0,0.2);
+  border-radius: 9px;
+  padding: 3px;
+  gap: 2px;
+}
+.view-btn {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 13px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.55);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.view-btn.active { background: white; color: var(--green); font-weight: 600; }
+.view-btn:not(.active):hover { background: rgba(255,255,255,0.12); color: white; }
 
-  /* Search bar floating over map */
-  .search-bar-map {
-    position: absolute;
-    top: 12px; left: 50%; transform: translateX(-50%);
-    z-index: 50;
-    width: min(500px, calc(100% - 32px));
-    display: flex; gap: 6px;
-  }
-  .search-input-wrap { position: relative; flex: 1; }
-  .search-input-wrap input {
-    width: 100%;
-    font-family: 'DM Sans', sans-serif; font-size: 13px;
-    padding: 9px 11px 9px 34px;
-    border-radius: 10px; border: none;
-    background: white; color: var(--ink); outline: none;
-    box-shadow: 0 2px 14px rgba(26,46,26,0.18);
-  }
-  .s-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 13px; pointer-events: none; }
+/* Filter button */
+.filter-btn {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 7px 14px;
+  border-radius: 9px;
+  border: 1px solid rgba(255,255,255,0.25);
+  background: transparent;
+  color: rgba(255,255,255,0.8);
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  position: relative;
+}
+.filter-btn:hover { background: rgba(255,255,255,0.12); color: white; }
+.filter-btn.active { border-color: var(--gold2); color: var(--gold2); }
+.filter-badge {
+  position: absolute;
+  top: -5px; right: -5px;
+  background: var(--gold);
+  color: white;
+  font-size: 9px;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+}
+.filter-btn.active .filter-badge { display: flex; }
 
-  /* Postal float */
-  .postal-float {
-    position: absolute; bottom: 40px; right: 60px;
-    z-index: 50; display: flex; gap: 6px;
-  }
-  .postal-float input {
-    font-family: 'DM Sans', sans-serif; font-size: 13px;
-    padding: 8px 11px; border-radius: 9px; border: none;
-    background: white; color: var(--ink); outline: none;
-    box-shadow: 0 2px 12px rgba(26,46,26,0.15);
-    text-transform: uppercase; width: 155px;
-  }
-  .postal-float input::placeholder { text-transform: none; color: #aaa; }
-  .postal-float input:focus { outline: 2px solid var(--accent2); outline-offset: 1px; }
-  .postal-btn {
-    font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500;
-    padding: 8px 13px; border-radius: 9px; border: none;
-    background: var(--accent); color: white;
-    cursor: pointer; transition: background 0.15s; white-space: nowrap;
-    box-shadow: 0 2px 12px rgba(26,46,26,0.15);
-  }
-  .postal-btn:hover { background: var(--accent2); }
+/* Surprise btn */
+.surprise-btn {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 7px 12px;
+  border-radius: 9px;
+  border: 1px solid rgba(201,151,58,0.5);
+  background: rgba(201,151,58,0.15);
+  color: var(--gold2);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.surprise-btn:hover { background: rgba(201,151,58,0.3); border-color: var(--gold2); }
 
-  /* ══ LIST VIEW ══ */
-  #list-view {
-    position: absolute; inset: 0; z-index: 2;
-    background: var(--cream); overflow-y: auto; display: none;
-  }
-  #list-view.active { display: block; }
-  #list-view::-webkit-scrollbar { width: 5px; }
-  #list-view::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+/* ══════════════════════════════════════════════════
+   STATUS BAR
+══════════════════════════════════════════════════ */
+.status-bar {
+  background: var(--sand2);
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  z-index: 10;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.status-bar::-webkit-scrollbar { display: none; }
 
-  .list-search-bar {
-    position: sticky; top: 0; z-index: 10;
-    background: var(--cream2); border-bottom: 1px solid var(--border);
-    padding: 10px 16px; display: flex; gap: 8px;
-  }
-  .list-search-bar .search-input-wrap input {
-    box-shadow: none; border: 1px solid var(--border); border-radius: 8px;
-  }
+.sfilt {
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1.5px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.sfilt:hover { color: var(--ink2); background: var(--sand3); }
+.sfilt.active { background: var(--green); color: white; border-color: var(--green); }
+.sfilt.active-gold { background: var(--gold); color: white; border-color: var(--gold); }
 
-  .list-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-    gap: 1px; background: var(--border);
-  }
+.status-bar-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--border);
+  flex-shrink: 0;
+}
 
-  /* ══ CARDS ══ */
-  .resto-card {
-    padding: 14px 18px; background: var(--cream);
-    cursor: pointer; transition: background 0.12s;
-  }
-  .resto-card:hover { background: var(--cream2); }
-  .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 5px; }
-  .card-name { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.2; }
-  .card-status { font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
-  .status-tested   { background: var(--green-lt); color: var(--green-dk); }
-  .status-untested { background: #E8E0D0; color: var(--muted); }
-  .card-meta { display: flex; gap: 8px; align-items: center; margin-bottom: 5px; flex-wrap: wrap; }
-  .card-type   { font-size: 11px; color: var(--muted); }
-  .card-origine{ font-size: 11px; color: var(--accent3); font-weight: 500; }
-  .card-price  { font-size: 11px; color: var(--accent3); font-weight: 500; }
-  .card-stars  { font-size: 11px; color: var(--accent3); letter-spacing: -1px; }
-  .card-tags   { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 5px; }
-  .card-tag    { font-size: 10px; padding: 2px 7px; border-radius: 10px; }
-  .tag-halal-zabiha-cert { background: #D4EDDA; color: #1A5C33; }
-  .tag-halal-zabiha-sans { background: #D4EDDA; color: #2D8C4A; }
-  .tag-halal-halal-cert  { background: #E8F5E9; color: #5A9E6A; }
-  .tag-halal-halal-sans  { background: #E8E0D0; color: var(--muted); }
-  .tag-alcool { background: #FDECEA; color: #C0392B; }
-  .tag-porc   { background: #FDECEA; color: #C0392B; }
-  .card-reco {
-    font-size: 11px; color: var(--ink2); font-style: italic; line-height: 1.4;
-    border-left: 2px solid var(--accent3); padding-left: 7px; margin-top: 6px;
-  }
-  .no-results { padding: 60px 20px; text-align: center; color: var(--muted); font-size: 13px; font-style: italic; }
+.stat-pill {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.stat-pill strong { color: var(--ink2); font-weight: 600; }
+#count-showing-wrap { margin-left: auto; flex-shrink: 0; }
 
-  /* ══ FILTER PANEL ══ */
-  .filter-overlay {
-    position: fixed; inset: 0;
-    background: rgba(26,46,26,0.38);
-    z-index: 2000; opacity: 0; pointer-events: none;
-    transition: opacity 0.22s;
-  }
-  .filter-overlay.open { opacity: 1; pointer-events: all; }
+/* ══════════════════════════════════════════════════
+   MAIN
+══════════════════════════════════════════════════ */
+.main { flex: 1; position: relative; overflow: hidden; }
 
-  .filter-panel {
-    position: absolute; top: 0; right: 0; bottom: 0; width: 320px;
-    background: var(--cream);
-    box-shadow: -6px 0 32px rgba(26,46,26,0.18);
-    display: flex; flex-direction: column;
-    transform: translateX(100%);
-    transition: transform 0.28s cubic-bezier(0.22,1,0.36,1);
-  }
-  .filter-overlay.open .filter-panel { transform: translateX(0); }
+/* MAP */
+#map { position: absolute; inset: 0; z-index: 1; }
 
-  .fp-header {
-    padding: 14px 18px; border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between;
-    background: var(--accent); flex-shrink: 0;
-  }
-  .fp-title { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: white; }
-  .fp-close {
-    background: rgba(255,255,255,0.15); border: none; color: white;
-    font-size: 16px; width: 28px; height: 28px; border-radius: 6px;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    transition: background 0.15s; line-height: 1;
-  }
-  .fp-close:hover { background: rgba(255,255,255,0.25); }
+/* Postal locator float */
+.postal-float {
+  position: absolute;
+  bottom: 44px;
+  right: 60px;
+  z-index: 50;
+  display: flex;
+  gap: 6px;
+}
+.postal-float input {
+  font-family: var(--font-body);
+  font-size: 13px;
+  padding: 9px 13px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: white;
+  color: var(--ink);
+  outline: none;
+  box-shadow: 0 4px 16px var(--shadow);
+  text-transform: uppercase;
+  width: 150px;
+  transition: border-color 0.15s;
+}
+.postal-float input::placeholder { text-transform: none; color: #bbb; }
+.postal-float input:focus { border-color: var(--green); }
+.postal-btn {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 9px 14px;
+  border-radius: 10px;
+  border: none;
+  background: var(--green);
+  color: white;
+  cursor: pointer;
+  transition: background 0.15s;
+  box-shadow: 0 4px 16px var(--shadow);
+  white-space: nowrap;
+}
+.postal-btn:hover { background: var(--green2); }
 
-  .fp-body {
-    flex: 1; overflow-y: auto; padding: 16px 18px;
-    display: flex; flex-direction: column; gap: 20px;
-  }
-  .fp-body::-webkit-scrollbar { width: 4px; }
-  .fp-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+/* ══════════════════════════════════════════════════
+   LIST VIEW
+══════════════════════════════════════════════════ */
+#list-view {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: var(--sand);
+  overflow-y: auto;
+  display: none;
+}
+#list-view.active { display: block; }
+#list-view::-webkit-scrollbar { width: 5px; }
+#list-view::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
-  .fp-section-label {
-    font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
-    text-transform: uppercase; color: var(--muted); margin-bottom: 8px;
-  }
-  .fp-dd {
-    width: 100%; font-family: 'DM Sans', sans-serif; font-size: 13px;
-    padding: 9px 32px 9px 11px; border: 1px solid var(--border); border-radius: 9px;
-    background: white; color: var(--ink); outline: none; cursor: pointer;
-    transition: border-color 0.15s; appearance: none; -webkit-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237A8C72' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat; background-position: right 10px center;
-  }
-  .fp-dd:focus { border-color: var(--accent2); }
+.list-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 16px;
+  padding: 20px;
+}
 
-  .fp-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-  .fp-chip {
-    font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500;
-    padding: 5px 12px; border-radius: 20px;
-    border: 1.5px solid var(--border); background: white; color: var(--ink2);
-    cursor: pointer; transition: all 0.15s;
-  }
-  .fp-chip:hover { border-color: var(--accent2); color: var(--accent2); }
-  .fp-chip.active { background: var(--accent2); color: white; border-color: var(--accent2); }
-  .fp-stars-chip { letter-spacing: -1px; }
+/* ══════════════════════════════════════════════════
+   CARDS
+══════════════════════════════════════════════════ */
+.resto-card {
+  background: white;
+  border-radius: 14px;
+  border: 1.5px solid var(--border);
+  padding: 16px 18px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.resto-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--green), var(--gold));
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.resto-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 32px rgba(28,26,22,0.12);
+  border-color: transparent;
+}
+.resto-card:hover::before { opacity: 1; }
 
-  .fp-footer {
-    padding: 14px 18px; border-top: 1px solid var(--border);
-    display: flex; gap: 8px; flex-shrink: 0;
-  }
-  .fp-reset {
-    flex: 1; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
-    padding: 10px; border-radius: 9px;
-    border: 1.5px solid var(--border); background: transparent; color: var(--muted);
-    cursor: pointer; transition: all 0.15s;
-  }
-  .fp-reset:hover { border-color: var(--muted); color: var(--ink); }
-  .fp-apply {
-    flex: 2; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
-    padding: 10px; border-radius: 9px; border: none;
-    background: var(--accent); color: white; cursor: pointer; transition: background 0.15s;
-  }
-  .fp-apply:hover { background: var(--accent2); }
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.card-name {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+.card-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.badge-tested   { background: var(--green-lt); color: var(--green-dk); }
+.badge-untested { background: var(--sand2); color: var(--muted); }
 
-  /* ══ POPUP ══ */
-  .leaflet-popup-content-wrapper {
-    border-radius: 12px !important; box-shadow: 0 8px 32px rgba(26,46,26,0.2) !important;
-    padding: 0 !important; overflow: hidden;
-    font-family: 'DM Sans', sans-serif !important; border: none !important; min-width: 260px;
-  }
-  .leaflet-popup-content { margin: 0 !important; width: auto !important; }
-  .leaflet-popup-tip-container { display: none; }
-  .leaflet-popup-close-button { color: white !important; font-size: 18px !important; top: 8px !important; right: 10px !important; z-index: 10; }
+.card-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.card-origine {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.card-type {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.card-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--border); }
+.card-price {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ink2);
+}
+.card-stars {
+  font-size: 12px;
+  color: var(--gold);
+  letter-spacing: 0px;
+  line-height: 1;
+}
 
-  .popup-inner { font-family: 'DM Sans', sans-serif; }
-  .popup-header { padding: 13px 15px 11px; background: var(--accent); }
-  .popup-name { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: white; margin-bottom: 5px; padding-right: 18px; }
-  .popup-badges { display: flex; gap: 5px; flex-wrap: wrap; }
-  .popup-badge { font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
-  .badge-tested   { background: var(--accent2); color: white; }
-  .badge-untested { background: rgba(255,255,255,0.2); color: rgba(255,255,255,0.85); }
-  .badge-type     { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
-  .badge-price    { background: var(--accent3); color: var(--ink); }
-  .badge-halal-zabiha-cert { background: #1A5C33; color: white; }
-  .badge-halal-zabiha-sans { background: #2D8C4A; color: white; }
-  .badge-halal-halal-cert  { background: #5A9E6A; color: white; }
-  .badge-halal-halal-sans  { background: #7ABF8A; color: white; }
-  .badge-origine { background: rgba(200,168,75,0.25); color: var(--accent3); }
+.card-tags {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-bottom: 9px;
+}
+.card-tag {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+.tag-zabiha-cert { background: #D1F2DF; color: #1A5C33; }
+.tag-zabiha-sans { background: #D6EFE2; color: #2D7A4A; }
+.tag-halal-cert  { background: #E4F5EA; color: #3D7A57; }
+.tag-halal-sans  { background: var(--sand2); color: var(--muted); }
+.tag-alcool { background: var(--red-lt); color: var(--red); }
+.tag-porc   { background: var(--red-lt); color: var(--red); }
+.tag-clean  { background: #D1F2DF; color: #1A5C33; }
 
-  .popup-body { padding: 11px 15px; background: var(--cream); }
-  .popup-row { display: flex; align-items: flex-start; gap: 7px; margin-bottom: 7px; font-size: 12px; color: var(--ink2); }
-  .popup-icon { font-size: 12px; flex-shrink: 0; margin-top: 1px; }
-  .popup-stars { color: var(--accent3); font-size: 13px; letter-spacing: -1px; }
-  .popup-reco { font-size: 11px; font-style: italic; color: var(--ink2); border-left: 2px solid var(--accent3); padding: 3px 0 3px 9px; margin: 7px 0; line-height: 1.5; }
-  .popup-actions { display: flex; gap: 7px; margin-top: 9px; }
-  .popup-btn {
-    flex: 1; padding: 7px 9px; border-radius: 8px;
-    font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500;
-    text-align: center; text-decoration: none; border: none; cursor: pointer;
-    transition: opacity 0.15s; color: white !important;
-  }
-  .popup-btn:hover { opacity: 0.85; }
-  .btn-gmaps { background: var(--accent); }
-  .btn-insta { background: var(--ink); }
+.card-reco {
+  font-size: 12px;
+  font-style: italic;
+  color: var(--ink2);
+  line-height: 1.5;
+  border-left: 2.5px solid var(--gold);
+  padding-left: 9px;
+  margin-top: 4px;
+}
 
-  /* ══ MOBILE ══ */
-  @media (max-width: 640px) {
-    header { padding: 0 12px; height: auto; min-height: 52px; flex-wrap: wrap; padding: 8px 12px; }
-    .status-filters { display: none; }
-    .filter-panel { width: 100%; }
-    .postal-float { bottom: 16px; right: 10px; left: 10px; }
-    .postal-float input { flex: 1; width: auto; }
-    .search-bar-map { width: calc(100% - 24px); }
-    #count-display { display: none; }
-  }
+.no-results {
+  grid-column: 1 / -1;
+  padding: 80px 20px;
+  text-align: center;
+}
+.no-results-icon { font-size: 48px; margin-bottom: 12px; }
+.no-results-msg { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--ink2); margin-bottom: 6px; }
+.no-results-sub { font-size: 13px; color: var(--muted); }
+
+/* ══════════════════════════════════════════════════
+   FILTER PANEL
+══════════════════════════════════════════════════ */
+.filter-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(28,26,22,0.45);
+  z-index: 2000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+  backdrop-filter: blur(2px);
+}
+.filter-overlay.open { opacity: 1; pointer-events: all; }
+
+.filter-panel {
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 340px;
+  background: var(--sand);
+  box-shadow: -8px 0 40px rgba(28,26,22,0.2);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.22,1,0.36,1);
+}
+.filter-overlay.open .filter-panel { transform: translateX(0); }
+
+.fp-head {
+  padding: 16px 20px;
+  background: var(--green);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  border-bottom: 2px solid rgba(201,151,58,0.4);
+  position: relative;
+  overflow: hidden;
+}
+.fp-head::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.06;
+  background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-rule='evenodd'%3E%3Ccircle cx='20' cy='20' r='2'/%3E%3Ccircle cx='0' cy='0' r='2'/%3E%3Ccircle cx='40' cy='0' r='2'/%3E%3Ccircle cx='0' cy='40' r='2'/%3E%3Ccircle cx='40' cy='40' r='2'/%3E%3C/g%3E%3C/svg%3E");
+}
+.fp-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: -0.02em;
+  position: relative;
+  z-index: 1;
+}
+.fp-title em { font-weight: 300; font-style: italic; color: var(--gold2); }
+.fp-close {
+  background: rgba(255,255,255,0.15);
+  border: none;
+  color: white;
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: background 0.15s;
+  position: relative;
+  z-index: 1;
+}
+.fp-close:hover { background: rgba(255,255,255,0.25); }
+
+.fp-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.fp-body::-webkit-scrollbar { width: 4px; }
+.fp-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.fp-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 9px;
+}
+
+.fp-select {
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 13px;
+  padding: 10px 34px 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  background: white;
+  color: var(--ink);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238A8272' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-color: white;
+}
+.fp-select:focus { border-color: var(--green); }
+
+.fp-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.fp-chip {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 13px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: white;
+  color: var(--ink2);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.fp-chip:hover { border-color: var(--green2); color: var(--green); }
+.fp-chip.active { background: var(--green); color: white; border-color: var(--green); }
+
+.fp-foot {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.fp-reset {
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.fp-reset:hover { border-color: var(--muted); color: var(--ink); }
+.fp-apply {
+  flex: 2;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  background: var(--green);
+  color: white;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.fp-apply:hover { background: var(--green2); }
+
+/* ══════════════════════════════════════════════════
+   LEAFLET POPUP
+══════════════════════════════════════════════════ */
+.leaflet-popup-content-wrapper {
+  border-radius: 16px !important;
+  box-shadow: 0 12px 40px rgba(28,26,22,0.2) !important;
+  padding: 0 !important;
+  overflow: hidden;
+  font-family: var(--font-body) !important;
+  border: none !important;
+  min-width: 270px;
+}
+.leaflet-popup-content { margin: 0 !important; width: auto !important; }
+.leaflet-popup-tip-container { display: none; }
+.leaflet-popup-close-button {
+  color: rgba(255,255,255,0.8) !important;
+  font-size: 20px !important;
+  top: 10px !important;
+  right: 12px !important;
+  z-index: 10;
+  width: 24px !important;
+  height: 24px !important;
+}
+
+.popup-wrap { font-family: var(--font-body); }
+.popup-top {
+  background: var(--green);
+  padding: 14px 16px 12px;
+  position: relative;
+  overflow: hidden;
+}
+.popup-top::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.06;
+  background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-rule='evenodd'%3E%3Ccircle cx='20' cy='20' r='2'/%3E%3Ccircle cx='0' cy='0' r='2'/%3E%3Ccircle cx='40' cy='0' r='2'/%3E%3Ccircle cx='0' cy='40' r='2'/%3E%3Ccircle cx='40' cy='40' r='2'/%3E%3C/g%3E%3C/svg%3E");
+}
+.popup-name {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 6px;
+  padding-right: 20px;
+  letter-spacing: -0.02em;
+  position: relative;
+  z-index: 1;
+}
+.popup-tags {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
+}
+.ptag {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+.ptag-status-tested   { background: var(--green2); color: white; }
+.ptag-status-untested { background: rgba(255,255,255,0.18); color: rgba(255,255,255,0.85); }
+.ptag-type   { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
+.ptag-price  { background: var(--gold); color: white; font-weight: 600; }
+.ptag-origine{ background: rgba(201,151,58,0.25); color: var(--gold2); }
+.ptag-zabiha-cert { background: #1A5C33; color: white; }
+.ptag-zabiha-sans { background: #2D7A4A; color: white; }
+.ptag-halal-cert  { background: #3D7A57; color: white; }
+.ptag-halal-sans  { background: rgba(255,255,255,0.18); color: rgba(255,255,255,0.75); }
+
+.popup-body {
+  padding: 12px 16px 14px;
+  background: white;
+}
+.popup-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--ink2);
+  margin-bottom: 7px;
+  line-height: 1.4;
+}
+.pi-icon { font-size: 13px; flex-shrink: 0; }
+.popup-stars { color: var(--gold); font-size: 14px; }
+.popup-reco {
+  font-size: 11.5px;
+  font-style: italic;
+  color: var(--ink2);
+  line-height: 1.5;
+  border-left: 2px solid var(--gold);
+  padding: 4px 0 4px 10px;
+  margin: 9px 0;
+}
+.popup-actions { display: flex; gap: 6px; margin-top: 10px; }
+.pop-btn {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 9px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  color: white !important;
+}
+.pop-btn:hover { opacity: 0.85; }
+.pop-btn-maps { background: var(--green); }
+.pop-btn-social { background: var(--ink); }
+
+/* ══════════════════════════════════════════════════
+   TOAST (Surprise)
+══════════════════════════════════════════════════ */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--ink);
+  color: white;
+  font-family: var(--font-body);
+  font-size: 13px;
+  padding: 10px 18px;
+  border-radius: 30px;
+  z-index: 3000;
+  white-space: nowrap;
+  box-shadow: 0 8px 24px rgba(28,26,22,0.3);
+  transition: transform 0.35s cubic-bezier(0.22,1,0.36,1);
+  pointer-events: none;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ══════════════════════════════════════════════════
+   MOBILE
+══════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  header { padding: 0 12px; flex-wrap: wrap; height: auto; min-height: 56px; padding: 8px 12px; gap: 8px; }
+  .header-mid { order: 3; width: 100%; padding-bottom: 4px; }
+  .surprise-btn { display: none; }
+  .filter-panel { width: 100%; }
+  .postal-float { bottom: 12px; right: 8px; left: 8px; }
+  .postal-float input { flex: 1; width: auto; }
+  .list-grid { grid-template-columns: 1fr; padding: 12px; gap: 10px; }
+  .card-name { font-size: 16px; }
+}
 </style>
 </head>
 <body>
 
-<!-- ══ HEADER ══ -->
+<!-- ═══ HEADER ═══ -->
 <header>
-  <div class="logo">Halal<span>Restaurant</span></div>
-  <div class="header-right">
-    <div class="status-filters">
-      <button class="sfilt active"       onclick="setStatusFilter('all',      this)">Tous</button>
-      <button class="sfilt"              onclick="setStatusFilter('tested',   this)">✓ Testés</button>
-      <button class="sfilt"              onclick="setStatusFilter('untested', this)">○ Non testés</button>
+  <div class="logo">Halal<em>Spot</em></div>
+
+  <div class="header-mid">
+    <div class="header-search">
+      <span class="s-icon">🔍</span>
+      <input type="text" id="search-input" placeholder="Rechercher un restaurant, type de plat…" oninput="applyFilters()">
     </div>
+  </div>
+
+  <div class="header-right">
+    <button class="surprise-btn" onclick="pickSurprise()" title="Restaurant aléatoire">🎲 Surprise</button>
     <div class="view-toggle">
       <button class="view-btn active" id="btn-map"  onclick="setView('map')">🗺 Carte</button>
       <button class="view-btn"        id="btn-list" onclick="setView('list')">☰ Liste</button>
     </div>
-    <button class="filter-trigger" id="filter-trigger-btn" onclick="openFilters()">
+    <button class="filter-btn" id="filter-trigger-btn" onclick="openFilters()">
       ⚙ Filtres
       <span class="filter-badge" id="filter-badge">0</span>
     </button>
   </div>
 </header>
 
-<!-- ══ STATS BAR ══ -->
-<div class="stats-bar">
-  <div class="stat"><div class="stat-dot" style="background:var(--accent2)"></div><span><strong id="count-tested">0</strong> testés</span></div>
-  <div class="stat"><div class="stat-dot" style="background:var(--muted)"></div><span><strong id="count-untested">0</strong> non testés</span></div>
-  <div id="count-display"><strong id="count-showing">0</strong> affichés</div>
+<!-- ═══ STATUS BAR ═══ -->
+<div class="status-bar">
+  <button class="sfilt active"     onclick="setStatusFilter('all',      this)">Tous</button>
+  <button class="sfilt"            onclick="setStatusFilter('tested',   this)">✓ Testés</button>
+  <button class="sfilt"            onclick="setStatusFilter('untested', this)">○ Non testés</button>
+  <div class="status-bar-divider"></div>
+  <div class="stat-pill"><strong id="count-tested">0</strong> testés</div>
+  <div class="stat-pill">·</div>
+  <div class="stat-pill"><strong id="count-untested">0</strong> non testés</div>
+  <div class="stat-pill" id="count-showing-wrap">
+    <strong id="count-showing">0</strong> affiché<span id="count-plural"></span>
+  </div>
 </div>
 
-<!-- ══ MAIN ══ -->
+<!-- ═══ MAIN ═══ -->
 <div class="main">
 
-  <!-- Carte Leaflet -->
+  <!-- Carte -->
   <div id="map"></div>
 
-  <!-- Barre de recherche flottante (vue carte) -->
-  <div class="search-bar-map" id="search-bar-map">
-    <div class="search-input-wrap">
-      <span class="s-icon">🔍</span>
-      <input type="text" id="search-input" placeholder="Rechercher un restaurant…" oninput="applyFilters()">
-    </div>
-  </div>
-
-  <!-- Code postal flottant -->
+  <!-- Code postal -->
   <div class="postal-float">
     <input type="text" id="postal-input" placeholder="Code postal…" maxlength="7">
     <button class="postal-btn" onclick="searchByPostal()">📍 Localiser</button>
   </div>
 
-  <!-- Vue liste -->
+  <!-- Liste -->
   <div id="list-view">
-    <div class="list-search-bar">
-      <div class="search-input-wrap">
-        <span class="s-icon">🔍</span>
-        <input type="text" id="search-input-list" placeholder="Rechercher un restaurant…" oninput="syncSearch(this.value)">
-      </div>
-    </div>
     <div class="list-grid" id="restaurant-list"></div>
   </div>
 
 </div>
 
-<!-- ══ FILTER PANEL ══ -->
+<!-- ═══ FILTER PANEL ═══ -->
 <div class="filter-overlay" id="filter-overlay" onclick="handleOverlayClick(event)">
   <div class="filter-panel">
 
-    <div class="fp-header">
-      <div class="fp-title">Filtres</div>
+    <div class="fp-head">
+      <div class="fp-title">Filtres <em>& recherche</em></div>
       <button class="fp-close" onclick="closeFilters()">✕</button>
     </div>
 
@@ -457,56 +866,56 @@
 
       <!-- Statut -->
       <div>
-        <div class="fp-section-label">Statut</div>
+        <div class="fp-label">Statut</div>
         <div class="fp-chips" id="fp-status-chips">
-          <button class="fp-chip active" data-val="all"      onclick="fpChipSelect(this,'status')">Tous</button>
-          <button class="fp-chip"        data-val="tested"   onclick="fpChipSelect(this,'status')">✓ Testés</button>
-          <button class="fp-chip"        data-val="untested" onclick="fpChipSelect(this,'status')">○ Non testés</button>
+          <button class="fp-chip active" data-val="all"      onclick="fpChip(this,'status')">Tous</button>
+          <button class="fp-chip"        data-val="tested"   onclick="fpChip(this,'status')">✓ Testés</button>
+          <button class="fp-chip"        data-val="untested" onclick="fpChip(this,'status')">○ Non testés</button>
         </div>
       </div>
 
       <!-- Origine -->
       <div>
-        <div class="fp-section-label">Origine culinaire</div>
-        <select class="fp-dd" id="fp-origine">
+        <div class="fp-label">Origine culinaire</div>
+        <select class="fp-select" id="fp-origine">
           <option value="">Toutes les origines</option>
         </select>
       </div>
 
-      <!-- Type de plat -->
+      <!-- Type -->
       <div>
-        <div class="fp-section-label">Type de plat</div>
-        <select class="fp-dd" id="fp-type">
+        <div class="fp-label">Type de plat</div>
+        <select class="fp-select" id="fp-type">
           <option value="">Tous les types</option>
         </select>
       </div>
 
       <!-- Prix -->
       <div>
-        <div class="fp-section-label">Budget</div>
-        <div class="fp-chips" id="fp-prix-chips">
-          <button class="fp-chip active" data-val=""    onclick="fpChipSelect(this,'prix')">Tous</button>
-          <button class="fp-chip"        data-val="$"   onclick="fpChipSelect(this,'prix')">$ Éco</button>
-          <button class="fp-chip"        data-val="$$"  onclick="fpChipSelect(this,'prix')">$$ Modéré</button>
-          <button class="fp-chip"        data-val="$$$" onclick="fpChipSelect(this,'prix')">$$$ Premium</button>
+        <div class="fp-label">Budget</div>
+        <div class="fp-chips">
+          <button class="fp-chip active" data-val=""    onclick="fpChip(this,'prix')">Tous</button>
+          <button class="fp-chip"        data-val="$"   onclick="fpChip(this,'prix')">$ Éco</button>
+          <button class="fp-chip"        data-val="$$"  onclick="fpChip(this,'prix')">$$ Modéré</button>
+          <button class="fp-chip"        data-val="$$$" onclick="fpChip(this,'prix')">$$$ Premium</button>
         </div>
       </div>
 
       <!-- Note -->
       <div>
-        <div class="fp-section-label">Note minimale</div>
-        <div class="fp-chips" id="fp-note-chips">
-          <button class="fp-chip active"      data-val=""  onclick="fpChipSelect(this,'note')">Toutes</button>
-          <button class="fp-chip fp-stars-chip" data-val="3" onclick="fpChipSelect(this,'note')">3+ ★★★</button>
-          <button class="fp-chip fp-stars-chip" data-val="4" onclick="fpChipSelect(this,'note')">4+ ★★★★</button>
-          <button class="fp-chip fp-stars-chip" data-val="5" onclick="fpChipSelect(this,'note')">5 ★★★★★</button>
+        <div class="fp-label">Note minimale</div>
+        <div class="fp-chips">
+          <button class="fp-chip active" data-val=""  onclick="fpChip(this,'note')">Toutes</button>
+          <button class="fp-chip"        data-val="3" onclick="fpChip(this,'note')">3+ ★★★</button>
+          <button class="fp-chip"        data-val="4" onclick="fpChip(this,'note')">4+ ★★★★</button>
+          <button class="fp-chip"        data-val="5" onclick="fpChip(this,'note')">5 ★★★★★</button>
         </div>
       </div>
 
-      <!-- Certification Halal -->
+      <!-- Halal -->
       <div>
-        <div class="fp-section-label">Certification Halal</div>
-        <select class="fp-dd" id="fp-halal">
+        <div class="fp-label">Certification Halal</div>
+        <select class="fp-select" id="fp-halal">
           <option value="">Toutes certifications</option>
           <option value="zabiha-cert">Zabiha avec certificat</option>
           <option value="zabiha-sans">Zabiha sans certificat</option>
@@ -517,261 +926,184 @@
 
       <!-- Restrictions -->
       <div>
-        <div class="fp-section-label">Restrictions alimentaires</div>
-        <div class="fp-chips" id="fp-restrictions-chips">
-          <button class="fp-chip active" data-val=""          onclick="fpChipSelect(this,'restrictions')">Aucune</button>
-          <button class="fp-chip"        data-val="no-alcool" onclick="fpChipSelect(this,'restrictions')">🚫 Sans alcool</button>
-          <button class="fp-chip"        data-val="no-porc"   onclick="fpChipSelect(this,'restrictions')">🚫 Sans porc</button>
-          <button class="fp-chip"        data-val="no-both"   onclick="fpChipSelect(this,'restrictions')">🚫 Sans alcool & porc</button>
+        <div class="fp-label">Restrictions alimentaires</div>
+        <div class="fp-chips">
+          <button class="fp-chip active" data-val=""          onclick="fpChip(this,'restrictions')">Aucune</button>
+          <button class="fp-chip"        data-val="no-alcool" onclick="fpChip(this,'restrictions')">🚫 Sans alcool</button>
+          <button class="fp-chip"        data-val="no-porc"   onclick="fpChip(this,'restrictions')">🚫 Sans porc</button>
+          <button class="fp-chip"        data-val="no-both"   onclick="fpChip(this,'restrictions')">🚫 Sans alcool & porc</button>
         </div>
       </div>
 
     </div>
 
-    <div class="fp-footer">
+    <div class="fp-foot">
       <button class="fp-reset" onclick="resetFilters()">Réinitialiser</button>
-      <button class="fp-apply" onclick="applyAndClose()">Appliquer</button>
+      <button class="fp-apply" onclick="applyAndClose()">Voir les résultats</button>
     </div>
   </div>
 </div>
 
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
 <script>
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════
 // CONFIG
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════
 const MAP_CENTER    = [45.5553, -73.7692];
 const MAP_ZOOM      = 12;
 const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTntIbPkm8M9tITIJ6J_LCbmnP_pzOwCYHiby3DLCJqT5ZNmdLkovYd5zb1cX8S3nf90tj3MGiO7HRH/pub?gid=2108723628&single=true&output=csv';
 
-// ══════════════════════════════════════════════
-// DEMO DATA
-// ══════════════════════════════════════════════
-const DEMO_DATA = [
-  { nom:"Al-Taïb",         adresse:"3050 Boul. de la Concorde E, Laval",   lat:45.5720, lng:-73.7050, origine:"Moyen-Orient",    type1:"Döner",   type2:"Shawarma", type3:"",        statut:"testé",     note:"5",   prix:"$$",  halal:"Zabiha halal avec certificat", alcool:"Non", porc:"Non", recommandation:"Meilleur shawarma de Laval. La sauce à l'ail est incroyable.", reseau:"", gmaps:"https://maps.google.com?q=Al+Taib+Laval" },
-  { nom:"Bombay Mahal",    adresse:"1001 Rue Jean-Talon O, Montréal",       lat:45.5246, lng:-73.6270, origine:"Asie du Sud",     type1:"Curry",   type2:"",         type3:"",        statut:"testé",     note:"4",   prix:"$",   halal:"Halal avec certificat",        alcool:"Non", porc:"Non", recommandation:"Curry agneau exceptionnel. BYO — apportez votre vin.",       reseau:"", gmaps:"https://maps.google.com?q=Bombay+Mahal+Montreal" },
-  { nom:"Hinnawi Brothers",adresse:"2505 Boul. Daniel-Johnson, Laval",      lat:45.5660, lng:-73.7420, origine:"Moyen-Orient",    type1:"Libanais",type2:"",         type3:"",        statut:"non testé", note:"",    prix:"$$",  halal:"Halal sans certificat",        alcool:"Non", porc:"Non", recommandation:"",                                                            reseau:"", gmaps:"https://maps.google.com?q=Hinnawi+Brothers+Laval" },
-  { nom:"Le Marrakech",    adresse:"1205 Boul. Chomedey, Laval",            lat:45.5510, lng:-73.7610, origine:"Afrique du Nord", type1:"Tajine",  type2:"Couscous", type3:"",        statut:"testé",     note:"5",   prix:"$$$", halal:"Zabiha halal avec certificat", alcool:"Non", porc:"Non", recommandation:"Tajine d'agneau aux pruneaux parfait. Ambiance exceptionnelle.", reseau:"", gmaps:"https://maps.google.com?q=Le+Marrakech+Laval" },
+// ══════════════════════════════════════════
+// DEMO DATA (fallback)
+// ══════════════════════════════════════════
+const DEMO = [
+  { nom:"Maison Publique",    adresse:"4720 Rue Marquette, Montréal",       lat:45.5289, lng:-73.5795, origine:"Europe",          type1:"Döner",       type2:"",           type3:"", statut:"testé",     note:"5",   prix:"$$",  halal:"Zabiha halal avec certificat", alcool:"Oui", porc:"Oui", recommandation:"Le tartare de bœuf est incroyable. Réserver à l'avance.",          reseau:"https://instagram.com/maisonpublique", gmaps:"https://maps.google.com?q=Maison+Publique+Montreal" },
+  { nom:"Décarie Hot Dog",    adresse:"955 Bd Décarie, Saint-Laurent",      lat:45.5020, lng:-73.6741, origine:"Ouest Afrique",   type1:"French Tacos",type2:"Bol",         type3:"", statut:"testé",     note:"4",   prix:"$$",  halal:"Zabiha halal sans certificat", alcool:"Non", porc:"Oui", recommandation:"Un classique montréalais. Le steamé all dressed vaut le détour.", reseau:"", gmaps:"https://maps.google.com?q=Decarie+Hot+Dog+Montreal" },
+  { nom:"Hinnawi Brothers",   adresse:"Laval, QC",                          lat:45.5660, lng:-73.7420, origine:"Asie",           type1:"Nouilles/Ramen",type2:"",          type3:"", statut:"non testé", note:"",    prix:"$$",  halal:"Halal avec certificat",        alcool:"Oui", porc:"Oui", recommandation:"", reseau:"", gmaps:"https://maps.google.com?q=Hinnawi+Brothers+Laval" },
+  { nom:"B12 Burger",         adresse:"1738 Bd Curé-Labelle, Laval",        lat:45.5521, lng:-73.7607, origine:"Amérique du Nord",type1:"Burger",       type2:"Poulet Frit",type3:"Sous-marin", statut:"testé",note:"4.5",prix:"$$", halal:"Halal sans certificat",       alcool:"Non", porc:"Non", recommandation:"", reseau:"", gmaps:"https://maps.app.goo.gl/QLdDrSrPpbL8Mghr7" },
 ];
 
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════
 // STATE
-// ══════════════════════════════════════════════
-let allRestaurants = [];
-let markers        = {};
-let postalMarker;
-let currentView    = 'map';
+// ══════════════════════════════════════════
+let all      = [];
+let markers  = {};
+let postalMk = null;
+let view     = 'map';
+const fp = { status:'all', origine:'', type:'', prix:'', note:'', halal:'', restrictions:'' };
 
-const fpState = {
-  status: 'all', origine: '', type: '', prix: '', note: '', halal: '', restrictions: '',
-};
-
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════
 // MAP
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════
 const map = L.map('map', { zoomControl: false }).setView(MAP_CENTER, MAP_ZOOM);
 L.control.zoom({ position: 'bottomright' }).addTo(map);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-  attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
-  subdomains: 'abcd', maxZoom: 19
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+  attribution: '© CARTO', subdomains: 'abcd', maxZoom: 19
 }).addTo(map);
 
-// ══════════════════════════════════════════════
-// VIEW TOGGLE
-// ══════════════════════════════════════════════
-function setView(v) {
-  currentView = v;
-  document.getElementById('btn-map').classList.toggle('active',  v === 'map');
-  document.getElementById('btn-list').classList.toggle('active', v === 'list');
-  document.getElementById('list-view').classList.toggle('active', v === 'list');
-  document.getElementById('search-bar-map').style.display = v === 'map' ? '' : 'none';
-  if (v === 'map') {
-    document.getElementById('search-input').value = document.getElementById('search-input-list').value;
-    setTimeout(() => map.invalidateSize(), 60);
-  } else {
-    document.getElementById('search-input-list').value = document.getElementById('search-input').value;
-  }
-}
-
-function syncSearch(val) {
-  document.getElementById('search-input').value = val;
-  applyFilters();
-}
-
-// ══════════════════════════════════════════════
-// FILTER PANEL
-// ══════════════════════════════════════════════
-function openFilters() {
-  syncPanelToState();
-  document.getElementById('filter-overlay').classList.add('open');
-}
-function closeFilters() { document.getElementById('filter-overlay').classList.remove('open'); }
-function handleOverlayClick(e) { if (e.target === document.getElementById('filter-overlay')) closeFilters(); }
-
-function syncPanelToState() {
-  fpChipSetActive('fp-status-chips',      fpState.status);
-  fpChipSetActive('fp-prix-chips',        fpState.prix);
-  fpChipSetActive('fp-note-chips',        fpState.note);
-  fpChipSetActive('fp-restrictions-chips',fpState.restrictions);
-  document.getElementById('fp-origine').value = fpState.origine;
-  document.getElementById('fp-type').value    = fpState.type;
-  document.getElementById('fp-halal').value   = fpState.halal;
-}
-
-function fpChipSetActive(groupId, val) {
-  const g = document.getElementById(groupId);
-  if (!g) return;
-  g.querySelectorAll('.fp-chip').forEach(c => c.classList.toggle('active', c.dataset.val === val));
-}
-
-function fpChipSelect(btn, key) {
-  btn.closest('.fp-chips').querySelectorAll('.fp-chip').forEach(c => c.classList.remove('active'));
-  btn.classList.add('active');
-  fpState[key] = btn.dataset.val;
-  // Sync header status buttons immediately
-  if (key === 'status') {
-    const map_ = { all:0, tested:1, untested:2 };
-    document.querySelectorAll('.sfilt').forEach((b,i) => {
-      b.classList.remove('active','active-green');
-      if (i === map_[fpState.status]) b.classList.add(fpState.status === 'tested' ? 'active-green' : 'active');
-    });
-  }
-}
-
-function setStatusFilter(type, btn) {
-  fpState.status = type;
-  document.querySelectorAll('.sfilt').forEach(b => b.classList.remove('active','active-green'));
-  btn.classList.add(type === 'tested' ? 'active-green' : 'active');
-  applyFilters();
-  updateFilterBadge();
-}
-
-function resetFilters() {
-  Object.assign(fpState, { status:'all', origine:'', type:'', prix:'', note:'', halal:'', restrictions:'' });
-  document.getElementById('search-input').value      = '';
-  document.getElementById('search-input-list').value = '';
-  syncPanelToState();
-  document.querySelectorAll('.sfilt').forEach((b,i) => {
-    b.classList.toggle('active', i === 0);
-    b.classList.remove('active-green');
+// ══════════════════════════════════════════
+// ICONS
+// ══════════════════════════════════════════
+function mkIcon(tested) {
+  const bg  = tested ? '#2A5C3F' : '#8A8272';
+  const sym = tested ? '✓' : '○';
+  return L.divIcon({
+    className: '',
+    html: `<div style="
+      width:32px;height:32px;
+      background:${bg};
+      border-radius:50% 50% 50% 0;
+      transform:rotate(-45deg);
+      border:2.5px solid white;
+      box-shadow:0 4px 12px rgba(28,26,22,0.28);
+      display:flex;align-items:center;justify-content:center;
+    "><span style="transform:rotate(45deg);font-size:12px;color:white;font-weight:700;line-height:1;">${sym}</span></div>`,
+    iconSize:[32,32], iconAnchor:[16,30], popupAnchor:[0,-34]
   });
 }
 
-function applyAndClose() {
-  fpState.origine = document.getElementById('fp-origine').value;
-  fpState.type    = document.getElementById('fp-type').value;
-  fpState.halal   = document.getElementById('fp-halal').value;
-  applyFilters();
-  updateFilterBadge();
-  closeFilters();
-}
-
-function updateFilterBadge() {
-  const q = document.getElementById('search-input').value.trim();
-  const n = [
-    fpState.status !== 'all', fpState.origine, fpState.type,
-    fpState.prix, fpState.note, fpState.halal, fpState.restrictions, q
-  ].filter(Boolean).length;
-  document.getElementById('filter-badge').textContent = n;
-  document.getElementById('filter-trigger-btn').classList.toggle('has-filters', n > 0);
-}
-
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════
 // HELPERS
-// ══════════════════════════════════════════════
-function starsHTML(note) {
-  const n = Math.min(5, Math.round(parseFloat(note) || 0));
-  return '★'.repeat(n) + '☆'.repeat(5 - n);
+// ══════════════════════════════════════════
+function stars(n) {
+  const v = Math.min(5, Math.round(parseFloat(n)||0));
+  return '★'.repeat(v) + '☆'.repeat(5-v);
 }
 
-function halalClass(halal) {
-  const h = (halal || '').toLowerCase();
-  if (h.includes('zabiha') && h.includes('avec')) return 'zabiha-cert';
-  if (h.includes('zabiha') && h.includes('sans')) return 'zabiha-sans';
-  if (h.includes('zabiha'))                        return 'zabiha-cert';
-  if (h.includes('avec'))                          return 'halal-cert';
-  if (h.includes('sans'))                          return 'halal-sans';
+function halalKey(h='') {
+  const l = h.toLowerCase();
+  if (l.includes('zabiha') && (l.includes('avec')||l.includes('cert'))) return 'zabiha-cert';
+  if (l.includes('zabiha')) return 'zabiha-sans';
+  if (l.includes('avec')||l.includes('cert'))  return 'halal-cert';
   return 'halal-sans';
 }
 
-function makeIcon(tested) {
-  const color = tested ? '#4A8C4A' : '#8C9E8C';
-  const sym   = tested ? '✓' : '○';
-  return L.divIcon({
-    className: '',
-    html: `<div style="width:30px;height:30px;background:${color};border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2.5px solid white;box-shadow:0 3px 8px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;"><span style="transform:rotate(45deg);font-size:12px;color:white;font-weight:700;line-height:1;">${sym}</span></div>`,
-    iconSize:[30,30], iconAnchor:[15,28], popupAnchor:[0,-32]
-  });
+function halalLabel(key) {
+  return { 'zabiha-cert':'Zabiha ✓ cert.', 'zabiha-sans':'Zabiha', 'halal-cert':'Halal ✓ cert.', 'halal-sans':'Halal' }[key] || '';
 }
 
-// ══════════════════════════════════════════════
-// BUILD POPUP & CARD
-// ══════════════════════════════════════════════
-function buildPopup(r) {
-  const tested    = r.statut === 'testé';
-  const hClass    = halalClass(r.halal);
-  const types     = [r.type1, r.type2, r.type3].filter(Boolean);
-  const alcoolOui = (r.alcool||'').toLowerCase() === 'oui';
-  const porcOui   = (r.porc  ||'').toLowerCase() === 'oui';
-  return `<div class="popup-inner">
-    <div class="popup-header">
+// ══════════════════════════════════════════
+// POPUP
+// ══════════════════════════════════════════
+function mkPopup(r) {
+  const tested = r.statut === 'testé';
+  const hk     = halalKey(r.halal);
+  const types  = [r.type1, r.type2, r.type3].filter(Boolean);
+  const noAlco = (r.alcool||'').toLowerCase() !== 'oui';
+  const noPorc = (r.porc  ||'').toLowerCase() !== 'oui';
+  return `<div class="popup-wrap">
+    <div class="popup-top">
       <div class="popup-name">${r.nom}</div>
-      <div class="popup-badges">
-        <span class="popup-badge ${tested?'badge-tested':'badge-untested'}">${tested?'✓ Testé & approuvé':'○ Non testés'}</span>
-        ${r.origine ? `<span class="popup-badge badge-origine">🌍 ${r.origine}</span>` : ''}
-        ${types.map(t=>`<span class="popup-badge badge-type">${t}</span>`).join('')}
-        ${r.prix    ? `<span class="popup-badge badge-price">${r.prix}</span>` : ''}
+      <div class="popup-tags">
+        <span class="ptag ptag-status-${tested?'tested':'untested'}">${tested?'✓ Testé':'○ Non testé'}</span>
+        ${r.origine ? `<span class="ptag ptag-origine">🌍 ${r.origine}</span>` : ''}
+        ${types.map(t=>`<span class="ptag ptag-type">${t}</span>`).join('')}
+        ${r.prix    ? `<span class="ptag ptag-price">${r.prix}</span>`                 : ''}
+        ${r.halal   ? `<span class="ptag ptag-${hk}">☪ ${halalLabel(hk)}</span>`      : ''}
       </div>
     </div>
     <div class="popup-body">
-      ${r.adresse ? `<div class="popup-row"><span class="popup-icon">📍</span><span>${r.adresse}</span></div>` : ''}
-      ${r.note    ? `<div class="popup-row"><span class="popup-icon">⭐</span><span class="popup-stars">${starsHTML(r.note)}</span></div>` : ''}
-      ${r.halal   ? `<div class="popup-row"><span class="popup-icon">☪</span><span class="popup-badge badge-halal-${hClass}" style="font-size:10px;padding:2px 8px;border-radius:20px;">${r.halal}</span></div>` : ''}
-      ${(alcoolOui||porcOui) ? `<div class="popup-row"><span class="popup-icon">⚠️</span><span style="font-size:11px;color:#C0392B;">${[alcoolOui?'🍷 Alcool servi':'',porcOui?'🐷 Porc au menu':''].filter(Boolean).join(' · ')}</span></div>` : ''}
-      ${(!alcoolOui&&!porcOui) ? `<div class="popup-row"><span class="popup-icon">✅</span><span style="font-size:11px;color:var(--green-dk);">Sans alcool · Sans porc</span></div>` : ''}
+      ${r.adresse ? `<div class="popup-info"><span class="pi-icon">📍</span><span>${r.adresse}</span></div>` : ''}
+      ${r.note    ? `<div class="popup-info"><span class="pi-icon">⭐</span><span class="popup-stars">${stars(r.note)} <span style="font-size:11px;color:var(--muted)">${r.note}/5</span></span></div>` : ''}
+      ${(noAlco&&noPorc) ? `<div class="popup-info"><span class="pi-icon">✅</span><span style="font-size:12px;color:var(--green-dk);">Sans alcool · Sans porc</span></div>` : ''}
+      ${(!noAlco||!noPorc) ? `<div class="popup-info"><span class="pi-icon">⚠️</span><span style="font-size:11.5px;color:var(--red)">${[!noAlco?'🍷 Alcool servi':'',!noPorc?'🐷 Porc au menu':''].filter(Boolean).join(' · ')}</span></div>` : ''}
       ${r.recommandation ? `<div class="popup-reco">"${r.recommandation}"</div>` : ''}
-      ${(r.gmaps||r.reseau) ? `<div class="popup-actions">
-        ${r.gmaps  ? `<a class="popup-btn btn-gmaps" href="${r.gmaps}"  target="_blank">🗺 Ouvrir dans Maps</a>` : ''}
-        ${r.reseau ? `<a class="popup-btn btn-insta" href="${r.reseau}" target="_blank">📸 Réseau social</a>`   : ''}
-      </div>` : ''}
+      <div class="popup-actions">
+        ${r.gmaps  ? `<a class="pop-btn pop-btn-maps"   href="${r.gmaps}"  target="_blank">🗺 Ouvrir Maps</a>` : ''}
+        ${r.reseau ? `<a class="pop-btn pop-btn-social" href="${r.reseau}" target="_blank">📸 Réseau social</a>` : ''}
+      </div>
     </div>
   </div>`;
 }
 
-function buildCard(r) {
-  const tested    = r.statut === 'testé';
-  const hClass    = halalClass(r.halal);
-  const types     = [r.type1, r.type2, r.type3].filter(Boolean);
-  const alcoolOui = (r.alcool||'').toLowerCase() === 'oui';
-  const porcOui   = (r.porc  ||'').toLowerCase() === 'oui';
-  return `<div class="resto-card" id="card-${r._idx}" onclick="focusResto(${r._idx})">
-    <div class="card-top">
+// ══════════════════════════════════════════
+// CARD
+// ══════════════════════════════════════════
+function mkCard(r) {
+  const tested = r.statut === 'testé';
+  const hk     = halalKey(r.halal);
+  const types  = [r.type1, r.type2, r.type3].filter(Boolean);
+  const noAlco = (r.alcool||'').toLowerCase() !== 'oui';
+  const noPorc = (r.porc  ||'').toLowerCase() !== 'oui';
+  return `<div class="resto-card" onclick="focusCard(${r._idx})">
+    <div class="card-header">
       <div class="card-name">${r.nom}</div>
-      <span class="card-status ${tested?'status-tested':'status-untested'}">${tested?'✓ Testé':'○ Non testé'}</span>
+      <span class="card-badge ${tested?'badge-tested':'badge-untested'}">${tested?'✓ Testé':'○ Non testé'}</span>
     </div>
-    <div class="card-meta">
-      ${r.origine    ? `<span class="card-origine">🌍 ${r.origine}</span>` : ''}
-      ${types.length ? `<span class="card-type">🍽 ${types.join(' · ')}</span>` : ''}
-      ${r.prix       ? `<span class="card-price">${r.prix}</span>` : ''}
-      ${r.note       ? `<span class="card-stars">${starsHTML(r.note)}</span>` : ''}
+    <div class="card-row">
+      ${r.origine    ? `<span class="card-origine">${r.origine}</span>` : ''}
+      ${r.origine && types.length ? `<span class="card-dot"></span>` : ''}
+      ${types.length ? `<span class="card-type">${types.join(' · ')}</span>` : ''}
+      ${r.prix       ? `<span class="card-dot"></span><span class="card-price">${r.prix}</span>` : ''}
+      ${r.note       ? `<span class="card-dot"></span><span class="card-stars">${stars(r.note)}</span>` : ''}
     </div>
     <div class="card-tags">
-      ${r.halal   ? `<span class="card-tag tag-halal-${hClass}">☪ ${r.halal}</span>` : ''}
-      ${alcoolOui ? `<span class="card-tag tag-alcool">🍷 Alcool</span>` : ''}
-      ${porcOui   ? `<span class="card-tag tag-porc">🐷 Porc</span>`    : ''}
+      ${r.halal ? `<span class="card-tag tag-${hk}">☪ ${halalLabel(hk)}</span>` : ''}
+      ${!noAlco ? `<span class="card-tag tag-alcool">🍷 Alcool</span>` : ''}
+      ${!noPorc ? `<span class="card-tag tag-porc">🐷 Porc</span>`    : ''}
+      ${(noAlco&&noPorc) ? `<span class="card-tag tag-clean">✅ Sans alcool & porc</span>` : ''}
     </div>
-    ${r.recommandation ? `<div class="card-reco">${r.recommandation}</div>` : ''}
+    ${r.recommandation ? `<div class="card-reco">"${r.recommandation}"</div>` : ''}
   </div>`;
 }
 
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════
 // RENDER
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════
 function renderList(data) {
-  const list = document.getElementById('restaurant-list');
-  list.innerHTML = data.length
-    ? data.map(r => buildCard(r)).join('')
-    : `<div class="no-results">Aucun restaurant trouvé.</div>`;
-  document.getElementById('count-showing').textContent = data.length;
+  const el = document.getElementById('restaurant-list');
+  el.innerHTML = data.length
+    ? data.map(r=>mkCard(r)).join('')
+    : `<div class="no-results">
+        <div class="no-results-icon">🔍</div>
+        <div class="no-results-msg">Aucun restaurant trouvé</div>
+        <div class="no-results-sub">Essayez d'ajuster vos filtres ou votre recherche</div>
+      </div>`;
+  const n = data.length;
+  document.getElementById('count-showing').textContent = n;
+  document.getElementById('count-plural').textContent   = n > 1 ? 's' : '';
 }
 
 function renderMarkers(data) {
@@ -779,65 +1111,168 @@ function renderMarkers(data) {
   markers = {};
   data.forEach(r => {
     if (!r.lat || !r.lng) return;
-    const m = L.marker([r.lat, r.lng], { icon: makeIcon(r.statut === 'testé') });
-    m.bindPopup(buildPopup(r), { maxWidth: 300, minWidth: 260 });
-    m.on('click', () => highlightCard(r._idx));
+    const m = L.marker([r.lat, r.lng], { icon: mkIcon(r.statut==='testé') });
+    m.bindPopup(mkPopup(r), { maxWidth:320, minWidth:270 });
     m.addTo(map);
     markers[r._idx] = m;
   });
 }
 
-function highlightCard(idx) {
-  document.querySelectorAll('.resto-card').forEach(c => c.classList.remove('active'));
-  document.getElementById('card-' + idx)?.classList.add('active');
-}
-
-function focusResto(idx) {
-  const r = allRestaurants[idx];
+// ══════════════════════════════════════════
+// FOCUS / SURPRISE
+// ══════════════════════════════════════════
+function focusCard(idx) {
+  const r = all[idx];
   if (!r) return;
-  highlightCard(idx);
   setView('map');
   if (r.lat && r.lng) {
-    map.setView([r.lat, r.lng], 16, { animate: true });
-    setTimeout(() => markers[idx]?.openPopup(), 120);
+    map.setView([r.lat, r.lng], 16, { animate:true });
+    setTimeout(() => markers[idx]?.openPopup(), 150);
   }
 }
 
-// ══════════════════════════════════════════════
-// APPLY FILTERS
-// ══════════════════════════════════════════════
-function applyFilters() {
-  const q = document.getElementById('search-input').value.toLowerCase();
-
-  const filtered = allRestaurants.filter(r => {
-    if (fpState.status === 'tested'   && r.statut !== 'testé') return false;
-    if (fpState.status === 'untested' && r.statut === 'testé') return false;
-    if (fpState.type) {
-      if (![r.type1,r.type2,r.type3].map(t=>(t||'').toLowerCase()).includes(fpState.type.toLowerCase())) return false;
-    }
-    if (fpState.prix && r.prix !== fpState.prix) return false;
-    if (fpState.note && (parseFloat(r.note)||0) < parseFloat(fpState.note)) return false;
-    if (fpState.origine && (r.origine||'').toLowerCase() !== fpState.origine.toLowerCase()) return false;
-    if (fpState.halal && halalClass(r.halal) !== fpState.halal) return false;
-    if (fpState.restrictions) {
-      const noA = (r.alcool||'').toLowerCase() !== 'oui';
-      const noP = (r.porc  ||'').toLowerCase() !== 'oui';
-      if (fpState.restrictions === 'no-alcool' && !noA) return false;
-      if (fpState.restrictions === 'no-porc'   && !noP) return false;
-      if (fpState.restrictions === 'no-both'   && (!noA||!noP)) return false;
-    }
-    if (q && !`${r.nom} ${r.type1} ${r.type2} ${r.type3} ${r.origine} ${r.adresse} ${r.recommandation}`.toLowerCase().includes(q)) return false;
-    return true;
-  });
-
-  renderList(filtered);
-  renderMarkers(filtered);
-  updateFilterBadge();
+function pickSurprise() {
+  const visible = getFiltered();
+  if (!visible.length) { showToast('Aucun restaurant à afficher !'); return; }
+  const r = visible[Math.floor(Math.random() * visible.length)];
+  showToast(`🎲 On essaie "${r.nom}" !`);
+  focusCard(r._idx);
 }
 
-// ══════════════════════════════════════════════
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ══════════════════════════════════════════
+// VIEWS
+// ══════════════════════════════════════════
+function setView(v) {
+  view = v;
+  document.getElementById('btn-map').classList.toggle('active',  v==='map');
+  document.getElementById('btn-list').classList.toggle('active', v==='list');
+  document.getElementById('list-view').classList.toggle('active', v==='list');
+  if (v==='map') setTimeout(()=>map.invalidateSize(), 60);
+}
+
+// ══════════════════════════════════════════
+// STATUS BAR
+// ══════════════════════════════════════════
+function setStatusFilter(type, btn) {
+  fp.status = type;
+  document.querySelectorAll('.sfilt').forEach(b => {
+    b.classList.remove('active','active-gold');
+  });
+  btn.classList.add(type==='tested' ? 'active-gold' : 'active');
+  applyFilters();
+}
+
+// ══════════════════════════════════════════
+// FILTERS
+// ══════════════════════════════════════════
+function openFilters()  { syncPanel(); document.getElementById('filter-overlay').classList.add('open'); }
+function closeFilters() { document.getElementById('filter-overlay').classList.remove('open'); }
+function handleOverlayClick(e) { if (e.target.id==='filter-overlay') closeFilters(); }
+
+function syncPanel() {
+  setChip('fp-status-chips', fp.status);
+  document.getElementById('fp-origine').value = fp.origine;
+  document.getElementById('fp-type').value    = fp.type;
+  document.getElementById('fp-halal').value   = fp.halal;
+}
+
+function setChip(groupId, val) {
+  document.getElementById(groupId)?.querySelectorAll('.fp-chip')
+    .forEach(c => c.classList.toggle('active', c.dataset.val===val));
+}
+
+function fpChip(btn, key) {
+  btn.closest('.fp-chips').querySelectorAll('.fp-chip').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  fp[key] = btn.dataset.val;
+  if (key==='status') {
+    document.querySelectorAll('.sfilt').forEach((b,i) => {
+      b.classList.remove('active','active-gold');
+      if (['all','tested','untested'][i]===fp.status) {
+        b.classList.add(fp.status==='tested'?'active-gold':'active');
+      }
+    });
+  }
+}
+
+function resetFilters() {
+  Object.assign(fp, { status:'all', origine:'', type:'', prix:'', note:'', halal:'', restrictions:'' });
+  document.getElementById('search-input').value = '';
+  syncPanel();
+  document.querySelectorAll('.sfilt').forEach((b,i) => {
+    b.classList.toggle('active', i===0);
+    b.classList.remove('active-gold');
+  });
+  // Reset all chips in filter panel
+  document.querySelectorAll('.fp-chips').forEach(g => {
+    g.querySelectorAll('.fp-chip').forEach((c,i)=>c.classList.toggle('active',i===0));
+  });
+}
+
+function applyAndClose() {
+  fp.origine = document.getElementById('fp-origine').value;
+  fp.type    = document.getElementById('fp-type').value;
+  fp.halal   = document.getElementById('fp-halal').value;
+  applyFilters();
+  updateBadge();
+  closeFilters();
+}
+
+function updateBadge() {
+  const q = document.getElementById('search-input').value.trim();
+  const n = [fp.status!=='all', fp.origine, fp.type, fp.prix, fp.note, fp.halal, fp.restrictions, q].filter(Boolean).length;
+  document.getElementById('filter-badge').textContent = n;
+  document.getElementById('filter-trigger-btn').classList.toggle('active', n>0);
+}
+
+// ══════════════════════════════════════════
+// APPLY FILTERS
+// ══════════════════════════════════════════
+function getFiltered() {
+  const q = (document.getElementById('search-input').value||'').toLowerCase().trim();
+  return all.filter(r => {
+    if (fp.status==='tested'   && r.statut!=='testé') return false;
+    if (fp.status==='untested' && r.statut==='testé') return false;
+    if (fp.type) {
+      const types = [r.type1,r.type2,r.type3].map(t=>(t||'').toLowerCase());
+      if (!types.includes(fp.type.toLowerCase())) return false;
+    }
+    if (fp.prix && r.prix!==fp.prix) return false;
+    if (fp.note && (parseFloat(r.note)||0)<parseFloat(fp.note)) return false;
+    if (fp.origine && (r.origine||'').toLowerCase()!==fp.origine.toLowerCase()) return false;
+    if (fp.halal && halalKey(r.halal)!==fp.halal) return false;
+    if (fp.restrictions) {
+      const noA = (r.alcool||'').toLowerCase()!=='oui';
+      const noP = (r.porc  ||'').toLowerCase()!=='oui';
+      if (fp.restrictions==='no-alcool' && !noA) return false;
+      if (fp.restrictions==='no-porc'   && !noP) return false;
+      if (fp.restrictions==='no-both'   && (!noA||!noP)) return false;
+    }
+    if (q) {
+      const hay = `${r.nom} ${r.type1} ${r.type2} ${r.type3} ${r.origine} ${r.adresse} ${r.recommandation}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function applyFilters() {
+  const data = getFiltered();
+  renderList(data);
+  renderMarkers(data);
+  updateBadge();
+}
+
+// ══════════════════════════════════════════
 // CODE POSTAL
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════
 async function searchByPostal() {
   const raw = document.getElementById('postal-input').value.trim();
   if (!raw) return;
@@ -845,41 +1280,42 @@ async function searchByPostal() {
   try {
     const res  = await fetch(`https://nominatim.openstreetmap.org/search?format=json&countrycodes=ca&q=${encodeURIComponent(postal)}&limit=1`, { headers:{'Accept-Language':'fr'} });
     const data = await res.json();
-    if (!data.length) { alert(`Code postal "${postal}" introuvable.`); return; }
-    const lat = parseFloat(data[0].lat), lng = parseFloat(data[0].lon);
-    if (postalMarker) map.removeLayer(postalMarker);
-    postalMarker = L.circleMarker([lat,lng],{radius:11,fillColor:'#2D5E2D',color:'white',weight:3,opacity:1,fillOpacity:0.95})
-      .addTo(map).bindPopup(`<b>📍 ${postal}</b><br><small>Votre position</small>`);
+    if (!data.length) { showToast(`Code postal "${postal}" introuvable.`); return; }
+    const lat=parseFloat(data[0].lat), lng=parseFloat(data[0].lon);
+    if (postalMk) map.removeLayer(postalMk);
+    postalMk = L.circleMarker([lat,lng],{radius:12,fillColor:'#C9973A',color:'white',weight:3,opacity:1,fillOpacity:0.95})
+      .addTo(map).bindPopup(`<div style="font-family:var(--font-body);font-size:13px;padding:4px 2px"><b>📍 ${postal}</b><br><small style="color:#888">Votre position</small></div>`);
     setView('map');
     map.setView([lat,lng],14,{animate:true});
-    postalMarker.openPopup();
-  } catch(e) { alert('Erreur de géolocalisation.'); }
+    postalMk.openPopup();
+  } catch(e) { showToast('Erreur de géolocalisation.'); }
 }
-document.getElementById('postal-input').addEventListener('keydown', e => { if(e.key==='Enter') searchByPostal(); });
+document.getElementById('postal-input').addEventListener('keydown', e=>{ if(e.key==='Enter') searchByPostal(); });
 
-// ══════════════════════════════════════════════
-// POPULATE DROPDOWNS
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════
+// DROPDOWNS
+// ══════════════════════════════════════════
 function populateDropdowns() {
-  const types   = [...new Set(allRestaurants.flatMap(r=>[r.type1,r.type2,r.type3]).filter(Boolean))].sort();
-  const origines = [...new Set(allRestaurants.map(r=>r.origine).filter(Boolean))].sort();
+  const types   = [...new Set(all.flatMap(r=>[r.type1,r.type2,r.type3]).filter(Boolean))].sort();
+  const origines = [...new Set(all.map(r=>r.origine).filter(Boolean))].sort();
   document.getElementById('fp-type').innerHTML    = `<option value="">Tous les types</option>` + types.map(t=>`<option value="${t}">${t}</option>`).join('');
   document.getElementById('fp-origine').innerHTML = `<option value="">Toutes les origines</option>` + origines.map(o=>`<option value="${o}">${o}</option>`).join('');
 }
 
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════
 // STATS
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════
 function updateStats() {
-  const tested = allRestaurants.filter(r=>r.statut==='testé').length;
+  const tested = all.filter(r=>r.statut==='testé').length;
   document.getElementById('count-tested').textContent   = tested;
-  document.getElementById('count-untested').textContent = allRestaurants.length - tested;
-  document.getElementById('count-showing').textContent  = allRestaurants.length;
+  document.getElementById('count-untested').textContent = all.length - tested;
+  document.getElementById('count-showing').textContent  = all.length;
+  document.getElementById('count-plural').textContent   = all.length > 1 ? 's' : '';
 }
 
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════
 // CSV PARSER
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════
 function parseCSV(text) {
   const lines   = text.trim().split('\n');
   if (lines.length < 2) return [];
@@ -896,7 +1332,7 @@ function parseCSV(text) {
     const obj={};
     headers.forEach((h,j)=>{ obj[h]=(vals[j]||'').replace(/^"|"$/g,'').trim(); });
     return {
-      _idx:i,
+      _idx: i,
       nom:            obj['nom']            || '',
       adresse:        obj['adresse']        || '',
       lat:            parseFloat(obj['latitude']  || obj['lat']) || 0,
@@ -918,21 +1354,19 @@ function parseCSV(text) {
   }).filter(r=>r.nom);
 }
 
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════
 // LOAD
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════
 async function loadData() {
-  if (SHEET_CSV_URL) {
-    try {
-      const res=await fetch(SHEET_CSV_URL);
-      const text=await res.text();
-      allRestaurants=parseCSV(text).map((r,i)=>({...r,_idx:i}));
-    } catch(e) {
-      console.warn('Sheet inaccessible, données démo.', e);
-      allRestaurants=DEMO_DATA.map((r,i)=>({...r,_idx:i}));
-    }
-  } else {
-    allRestaurants=DEMO_DATA.map((r,i)=>({...r,_idx:i}));
+  try {
+    if (SHEET_CSV_URL) {
+      const res  = await fetch(SHEET_CSV_URL);
+      const text = await res.text();
+      all = parseCSV(text).map((r,i)=>({...r,_idx:i}));
+    } else { throw new Error('no url'); }
+  } catch(e) {
+    console.warn('CSV inaccessible, fallback démo.', e);
+    all = DEMO.map((r,i)=>({...r,_idx:i}));
   }
   updateStats();
   populateDropdowns();
