@@ -423,10 +423,11 @@ header::after {
   padding: 3px 8px;
   border-radius: 6px;
 }
-.tag-zabiha-cert { background: #D1F2DF; color: #1A5C33; }
-.tag-zabiha-sans { background: #D6EFE2; color: #2D7A4A; }
-.tag-halal-cert  { background: #E4F5EA; color: #3D7A57; }
-.tag-halal-sans  { background: var(--sand2); color: var(--muted); }
+/* Hiérarchie halal — carte liste */
+.tag-zabiha-cert { background: linear-gradient(135deg,#7A5C1E,#C9973A); color: #FFF8E6; font-weight: 700; box-shadow: 0 1px 4px rgba(201,151,58,0.35); }
+.tag-zabiha-sans { background: #FDF3DC; color: #8A5E0A; border: 1px solid #E5C46A; font-weight: 600; }
+.tag-halal-cert  { background: var(--green); color: white; font-weight: 600; }
+.tag-halal-sans  { background: var(--sand2); color: var(--muted); border: 1px solid var(--border); }
 .tag-alcool { background: var(--red-lt); color: var(--red); }
 .tag-porc   { background: var(--red-lt); color: var(--red); }
 .tag-clean  { background: #D1F2DF; color: #1A5C33; }
@@ -690,10 +691,10 @@ header::after {
 .ptag-type             { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
 .ptag-price            { background: var(--gold); color: white; font-weight: 600; }
 .ptag-origine          { background: rgba(201,151,58,0.25); color: var(--gold2); }
-.ptag-zabiha-cert      { background: #1A5C33; color: white; }
-.ptag-zabiha-sans      { background: #2D7A4A; color: white; }
-.ptag-halal-cert       { background: #3D7A57; color: white; }
-.ptag-halal-sans       { background: rgba(255,255,255,0.18); color: rgba(255,255,255,0.75); }
+.ptag-zabiha-cert { background: linear-gradient(135deg,#7A5C1E,#C9973A); color: #FFF8E6; font-weight: 700; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+.ptag-zabiha-sans { background: rgba(229,184,74,0.22); color: #F0D080; border: 1px solid rgba(229,184,74,0.4); font-weight: 600; }
+.ptag-halal-cert  { background: var(--green2); color: white; font-weight: 600; }
+.ptag-halal-sans  { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.65); }
 
 .popup-body {
   padding: 12px 16px 14px;
@@ -993,15 +994,20 @@ function stars(n) {
 }
 
 function halalKey(h='') {
-  const l = h.toLowerCase();
-  if (l.includes('zabiha') && (l.includes('avec')||l.includes('cert'))) return 'zabiha-cert';
-  if (l.includes('zabiha')) return 'zabiha-sans';
-  if (l.includes('avec')||l.includes('cert')) return 'halal-cert';
+  const n = parseInt(h.trim().charAt(0));
+  if (n === 1) return 'zabiha-cert';
+  if (n === 2) return 'zabiha-sans';
+  if (n === 3) return 'halal-cert';
   return 'halal-sans';
 }
 
 function halalLabel(key) {
-  return { 'zabiha-cert':'Zabiha ✓ cert.', 'zabiha-sans':'Zabiha', 'halal-cert':'Halal ✓ cert.', 'halal-sans':'Halal' }[key] || '';
+  return {
+    'zabiha-cert': '⭐ Zabiha certifié',
+    'zabiha-sans': '🥩 Zabiha sans cert.',
+    'halal-cert':  '✅ Halal certifié',
+    'halal-sans':  '☪ Halal sans cert.'
+  }[key] || '';
 }
 
 // ══════════════════════════════════════════
