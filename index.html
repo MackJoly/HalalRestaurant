@@ -31,6 +31,18 @@
   --border:    #D5CCBA;
   --shadow:    rgba(28,26,22,0.12);
 
+  /* Coup de coeur — framboise chaleureuse */
+  --heart:     #C0392B;
+  --heart2:    #E74C3C;
+  --heart-lt:  #FDECEA;
+  --heart-dk:  #922B21;
+
+  /* Non testé — ambre/orange */
+  --amber:     #D35400;
+  --amber2:    #E67E22;
+  --amber-lt:  #FDF0E6;
+  --amber-dk:  #A04000;
+
   --font-display: 'Fraunces', Georgia, serif;
   --font-body:    'Outfit', system-ui, sans-serif;
 }
@@ -50,7 +62,6 @@ body {
   overflow: hidden;
 }
 
-/* Grain texture overlay */
 body::before {
   content: '';
   position: fixed;
@@ -78,7 +89,6 @@ header {
   flex-shrink: 0;
 }
 
-/* Arabesk pattern in header */
 header::after {
   content: '';
   position: absolute;
@@ -212,7 +222,7 @@ header::after {
 }
 .filter-btn.active .filter-badge { display: flex; }
 
-/* Surprise btn */
+/* Aléatoire btn */
 .surprise-btn {
   font-family: var(--font-body);
   font-size: 12px;
@@ -261,8 +271,11 @@ header::after {
   flex-shrink: 0;
 }
 .sfilt:hover { color: var(--ink2); background: var(--sand3); }
-.sfilt.active { background: var(--green); color: white; border-color: var(--green); }
-.sfilt.active-gold { background: var(--gold); color: white; border-color: var(--gold); }
+.sfilt.active        { background: var(--green);  color: white; border-color: var(--green); }
+.sfilt.active-gold   { background: var(--gold);   color: white; border-color: var(--gold); }
+.sfilt.active-heart  { background: var(--heart);  color: white; border-color: var(--heart); }
+.sfilt.active-amber  { background: var(--amber);  color: white; border-color: var(--amber); }
+
 .sfilt-count {
   display: inline-flex;
   align-items: center;
@@ -274,7 +287,10 @@ header::after {
   padding: 1px 6px;
   margin-left: 3px;
 }
-.sfilt.active .sfilt-count, .sfilt.active-gold .sfilt-count { background: rgba(255,255,255,0.25); }
+.sfilt.active .sfilt-count,
+.sfilt.active-gold .sfilt-count,
+.sfilt.active-heart .sfilt-count,
+.sfilt.active-amber .sfilt-count { background: rgba(255,255,255,0.25); }
 
 .status-bar-divider {
   width: 1px;
@@ -283,22 +299,11 @@ header::after {
   flex-shrink: 0;
 }
 
-.stat-pill {
-  font-size: 11px;
-  color: var(--muted);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-.stat-pill strong { color: var(--ink2); font-weight: 600; }
-
 /* ══════════════════════════════════════════════════
    MAIN
 ══════════════════════════════════════════════════ */
 .main { flex: 1; position: relative; overflow: hidden; }
-
-/* MAP */
 #map { position: absolute; inset: 0; z-index: 1; }
-
 
 /* ══════════════════════════════════════════════════
    LIST VIEW
@@ -344,6 +349,14 @@ header::after {
   opacity: 0;
   transition: opacity 0.2s;
 }
+/* Coup de coeur card accent */
+.resto-card.card-heart::before {
+  background: linear-gradient(90deg, var(--heart), var(--heart2));
+  opacity: 1;
+}
+.resto-card.card-heart {
+  border-color: rgba(192,57,43,0.25);
+}
 .resto-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 10px 32px rgba(28,26,22,0.12);
@@ -376,7 +389,8 @@ header::after {
   margin-top: 2px;
 }
 .badge-tested   { background: var(--green-lt); color: var(--green-dk); }
-.badge-untested { background: var(--sand2); color: var(--muted); }
+.badge-untested { background: var(--amber-lt); color: var(--amber-dk); }
+.badge-heart    { background: var(--heart-lt); color: var(--heart-dk); }
 
 .card-row {
   display: flex;
@@ -392,22 +406,10 @@ header::after {
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
-.card-type {
-  font-size: 11.5px;
-  color: var(--muted);
-}
-.card-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--border); }
-.card-price {
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--ink2);
-}
-.card-stars {
-  font-size: 12px;
-  color: var(--gold);
-  letter-spacing: 0px;
-  line-height: 1;
-}
+.card-type  { font-size: 11.5px; color: var(--muted); }
+.card-dot   { width: 3px; height: 3px; border-radius: 50%; background: var(--border); }
+.card-price { font-size: 11.5px; font-weight: 600; color: var(--ink2); }
+.card-stars { font-size: 12px; color: var(--gold); line-height: 1; }
 
 .card-tags {
   display: flex;
@@ -428,6 +430,7 @@ header::after {
 .tag-alcool { background: var(--red-lt); color: var(--red); }
 .tag-porc   { background: var(--red-lt); color: var(--red); }
 .tag-clean  { background: #D1F2DF; color: #1A5C33; }
+.tag-heart  { background: var(--heart-lt); color: var(--heart); font-weight: 700; }
 
 .card-reco {
   font-size: 12px;
@@ -445,8 +448,8 @@ header::after {
   text-align: center;
 }
 .no-results-icon { font-size: 48px; margin-bottom: 12px; }
-.no-results-msg { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--ink2); margin-bottom: 6px; }
-.no-results-sub { font-size: 13px; color: var(--muted); }
+.no-results-msg  { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--ink2); margin-bottom: 6px; }
+.no-results-sub  { font-size: 13px; color: var(--muted); }
 
 /* ══════════════════════════════════════════════════
    FILTER PANEL
@@ -576,6 +579,7 @@ header::after {
 }
 .fp-chip:hover { border-color: var(--green2); color: var(--green); }
 .fp-chip.active { background: var(--green); color: white; border-color: var(--green); }
+.fp-chip.active-heart { background: var(--heart); color: white; border-color: var(--heart); }
 
 .fp-foot {
   padding: 16px 20px;
@@ -644,6 +648,11 @@ header::after {
   position: relative;
   overflow: hidden;
 }
+/* Coup de coeur popup top */
+.popup-top.top-heart { background: linear-gradient(135deg, var(--heart) 0%, var(--heart2) 100%); }
+/* Non testé popup top */
+.popup-top.top-amber { background: linear-gradient(135deg, var(--amber-dk) 0%, var(--amber) 100%); }
+
 .popup-top::after {
   content: '';
   position: absolute;
@@ -675,15 +684,16 @@ header::after {
   padding: 2px 8px;
   border-radius: 20px;
 }
-.ptag-status-tested   { background: var(--green2); color: white; }
-.ptag-status-untested { background: rgba(255,255,255,0.18); color: rgba(255,255,255,0.85); }
-.ptag-type   { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
-.ptag-price  { background: var(--gold); color: white; font-weight: 600; }
-.ptag-origine{ background: rgba(201,151,58,0.25); color: var(--gold2); }
-.ptag-zabiha-cert { background: #1A5C33; color: white; }
-.ptag-zabiha-sans { background: #2D7A4A; color: white; }
-.ptag-halal-cert  { background: #3D7A57; color: white; }
-.ptag-halal-sans  { background: rgba(255,255,255,0.18); color: rgba(255,255,255,0.75); }
+.ptag-status-tested    { background: var(--green2); color: white; }
+.ptag-status-untested  { background: rgba(255,255,255,0.18); color: rgba(255,255,255,0.85); }
+.ptag-status-heart     { background: rgba(255,255,255,0.25); color: white; font-weight: 700; }
+.ptag-type             { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
+.ptag-price            { background: var(--gold); color: white; font-weight: 600; }
+.ptag-origine          { background: rgba(201,151,58,0.25); color: var(--gold2); }
+.ptag-zabiha-cert      { background: #1A5C33; color: white; }
+.ptag-zabiha-sans      { background: #2D7A4A; color: white; }
+.ptag-halal-cert       { background: #3D7A57; color: white; }
+.ptag-halal-sans       { background: rgba(255,255,255,0.18); color: rgba(255,255,255,0.75); }
 
 .popup-body {
   padding: 12px 16px 14px;
@@ -725,11 +735,11 @@ header::after {
   color: white !important;
 }
 .pop-btn:hover { opacity: 0.85; }
-.pop-btn-maps { background: var(--green); }
+.pop-btn-maps   { background: var(--green); }
 .pop-btn-social { background: var(--ink); }
 
 /* ══════════════════════════════════════════════════
-   TOAST (Surprise)
+   TOAST
 ══════════════════════════════════════════════════ */
 .toast {
   position: fixed;
@@ -754,7 +764,7 @@ header::after {
    MOBILE
 ══════════════════════════════════════════════════ */
 @media (max-width: 640px) {
-  header { padding: 0 12px; flex-wrap: wrap; height: auto; min-height: 56px; padding: 8px 12px; gap: 8px; }
+  header { padding: 8px 12px; flex-wrap: wrap; height: auto; min-height: 56px; gap: 8px; }
   .header-mid { order: 3; width: 100%; padding-bottom: 4px; }
   .surprise-btn { display: none; }
   .filter-panel { width: 100%; }
@@ -777,7 +787,7 @@ header::after {
   </div>
 
   <div class="header-right">
-    <button class="surprise-btn" onclick="pickSurprise()" title="Restaurant aléatoire">🎲 Surprise</button>
+    <button class="surprise-btn" onclick="pickAlea()" title="Restaurant aléatoire">✨ Aléatoire</button>
     <div class="view-toggle">
       <button class="view-btn active" id="btn-map"  onclick="setView('map')">🗺 Carte</button>
       <button class="view-btn"        id="btn-list" onclick="setView('list')">☰ Liste</button>
@@ -791,23 +801,18 @@ header::after {
 
 <!-- ═══ STATUS BAR ═══ -->
 <div class="status-bar">
-  <button class="sfilt active"     onclick="setStatusFilter('all',      this)">Tous</button>
-  <button class="sfilt"            onclick="setStatusFilter('tested',   this)">✓ Testés <span id="count-tested" class="sfilt-count">0</span></button>
-  <button class="sfilt"            onclick="setStatusFilter('untested', this)">○ Non testés <span id="count-untested" class="sfilt-count">0</span></button>
+  <button class="sfilt active"    onclick="setStatusFilter('all',      this)">Tous</button>
+  <button class="sfilt"           onclick="setStatusFilter('tested',   this)">✓ Testés <span id="count-tested" class="sfilt-count">0</span></button>
+  <button class="sfilt"           onclick="setStatusFilter('untested', this)">○ Non testés <span id="count-untested" class="sfilt-count">0</span></button>
+  <button class="sfilt"           onclick="setStatusFilter('heart',    this)">♥ Coups de cœur <span id="count-heart" class="sfilt-count">0</span></button>
 </div>
 
 <!-- ═══ MAIN ═══ -->
 <div class="main">
-
-  <!-- Carte -->
   <div id="map"></div>
-
-
-  <!-- Liste -->
   <div id="list-view">
     <div class="list-grid" id="restaurant-list"></div>
   </div>
-
 </div>
 
 <!-- ═══ FILTER PANEL ═══ -->
@@ -828,6 +833,16 @@ header::after {
           <button class="fp-chip active" data-val="all"      onclick="fpChip(this,'status')">Tous</button>
           <button class="fp-chip"        data-val="tested"   onclick="fpChip(this,'status')">✓ Testés</button>
           <button class="fp-chip"        data-val="untested" onclick="fpChip(this,'status')">○ Non testés</button>
+          <button class="fp-chip"        data-val="heart"    onclick="fpChip(this,'status')">♥ Coups de cœur</button>
+        </div>
+      </div>
+
+      <!-- Coup de cœur seul -->
+      <div>
+        <div class="fp-label">Coup de cœur</div>
+        <div class="fp-chips" id="fp-heart-chips">
+          <button class="fp-chip active" data-val=""     onclick="fpChip(this,'heart')">Tous</button>
+          <button class="fp-chip"        data-val="yes"  onclick="fpChip(this,'heart')">♥ Coups de cœur uniquement</button>
         </div>
       </div>
 
@@ -916,10 +931,8 @@ const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTntIbPkm
 // DEMO DATA (fallback)
 // ══════════════════════════════════════════
 const DEMO = [
-  { nom:"Maison Publique",    adresse:"4720 Rue Marquette, Montréal",       lat:45.5289, lng:-73.5795, origine:"Europe",          type1:"Döner",       type2:"",           type3:"", statut:"testé",     note:"5",   prix:"$$",  halal:"Zabiha halal avec certificat", alcool:"Oui", porc:"Oui", recommandation:"Le tartare de bœuf est incroyable. Réserver à l'avance.",          reseau:"https://instagram.com/maisonpublique", gmaps:"https://maps.google.com?q=Maison+Publique+Montreal" },
-  { nom:"Décarie Hot Dog",    adresse:"955 Bd Décarie, Saint-Laurent",      lat:45.5020, lng:-73.6741, origine:"Ouest Afrique",   type1:"French Tacos",type2:"Bol",         type3:"", statut:"testé",     note:"4",   prix:"$$",  halal:"Zabiha halal sans certificat", alcool:"Non", porc:"Oui", recommandation:"Un classique montréalais. Le steamé all dressed vaut le détour.", reseau:"", gmaps:"https://maps.google.com?q=Decarie+Hot+Dog+Montreal" },
-  { nom:"Hinnawi Brothers",   adresse:"Laval, QC",                          lat:45.5660, lng:-73.7420, origine:"Asie",           type1:"Nouilles/Ramen",type2:"",          type3:"", statut:"non testé", note:"",    prix:"$$",  halal:"Halal avec certificat",        alcool:"Oui", porc:"Oui", recommandation:"", reseau:"", gmaps:"https://maps.google.com?q=Hinnawi+Brothers+Laval" },
-  { nom:"B12 Burger",         adresse:"1738 Bd Curé-Labelle, Laval",        lat:45.5521, lng:-73.7607, origine:"Amérique du Nord",type1:"Burger",       type2:"Poulet Frit",type3:"Sous-marin", statut:"testé",note:"4.5",prix:"$$", halal:"Halal sans certificat",       alcool:"Non", porc:"Non", recommandation:"", reseau:"", gmaps:"https://maps.app.goo.gl/QLdDrSrPpbL8Mghr7" },
+  { nom:"B12 Burger", adresse:"1738 Bd Curé-Labelle, Laval", lat:45.5521, lng:-73.7607, origine:"Amérique du Nord", type1:"🍔 Burger", type2:"🍗 Poulet Frit", type3:"🥖 Sous-marin", statut:"testé", note:"4.5", prix:"$$", halal:"Halal sans certificat", alcool:"Non", porc:"Non", recommandation:"", reseau:"", coupDeCoeur:true,  gmaps:"https://maps.app.goo.gl/QLdDrSrPpbL8Mghr7" },
+  { nom:"Amir",       adresse:"5230 Rue Jean-Talon E, Montréal", lat:45.5784, lng:-73.5822, origine:"Moyen-Orient", type1:"🌯 Shawarma", type2:"", type3:"", statut:"non testé", note:"", prix:"$$", halal:"Halal sans certificat", alcool:"Non", porc:"Non", recommandation:"", reseau:"", coupDeCoeur:false, gmaps:"https://maps.google.com/?cid=ChIJ_dNqM5QeyUwRhViTWBSoHoU" },
 ];
 
 // ══════════════════════════════════════════
@@ -928,7 +941,7 @@ const DEMO = [
 let all      = [];
 let markers  = {};
 let view     = 'map';
-const fp = { status:'all', origine:'', type:'', prix:'', note:'', halal:'', restrictions:'' };
+const fp = { status:'all', heart:'', origine:'', type:'', prix:'', note:'', halal:'', restrictions:'' };
 
 // ══════════════════════════════════════════
 // MAP
@@ -942,9 +955,20 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r
 // ══════════════════════════════════════════
 // ICONS
 // ══════════════════════════════════════════
-function mkIcon(tested) {
-  const bg  = tested ? '#2A5C3F' : '#8A8272';
-  const sym = tested ? '✓' : '○';
+function mkIcon(r) {
+  const isHeart   = r.coupDeCoeur;
+  const isTested  = r.statut === 'testé';
+  let bg, sym;
+  if (isHeart) {
+    bg  = '#C0392B';  // rouge framboise
+    sym = '♥';
+  } else if (isTested) {
+    bg  = '#2A5C3F';  // vert
+    sym = '✓';
+  } else {
+    bg  = '#D35400';  // amber/orange
+    sym = '○';
+  }
   return L.divIcon({
     className: '',
     html: `<div style="
@@ -955,7 +979,7 @@ function mkIcon(tested) {
       border:2.5px solid white;
       box-shadow:0 4px 12px rgba(28,26,22,0.28);
       display:flex;align-items:center;justify-content:center;
-    "><span style="transform:rotate(45deg);font-size:12px;color:white;font-weight:700;line-height:1;">${sym}</span></div>`,
+    "><span style="transform:rotate(45deg);font-size:${isHeart?'14px':'12px'};color:white;font-weight:700;line-height:1;">${sym}</span></div>`,
     iconSize:[32,32], iconAnchor:[16,30], popupAnchor:[0,-34]
   });
 }
@@ -972,7 +996,7 @@ function halalKey(h='') {
   const l = h.toLowerCase();
   if (l.includes('zabiha') && (l.includes('avec')||l.includes('cert'))) return 'zabiha-cert';
   if (l.includes('zabiha')) return 'zabiha-sans';
-  if (l.includes('avec')||l.includes('cert'))  return 'halal-cert';
+  if (l.includes('avec')||l.includes('cert')) return 'halal-cert';
   return 'halal-sans';
 }
 
@@ -984,20 +1008,35 @@ function halalLabel(key) {
 // POPUP
 // ══════════════════════════════════════════
 function mkPopup(r) {
-  const tested = r.statut === 'testé';
-  const hk     = halalKey(r.halal);
-  const types  = [r.type1, r.type2, r.type3].filter(Boolean);
-  const noAlco = (r.alcool||'').toLowerCase() !== 'oui';
-  const noPorc = (r.porc  ||'').toLowerCase() !== 'oui';
+  const isHeart  = r.coupDeCoeur;
+  const isTested = r.statut === 'testé';
+  const hk       = halalKey(r.halal);
+  const types    = [r.type1, r.type2, r.type3].filter(Boolean);
+  const noAlco   = (r.alcool||'').toLowerCase() !== 'oui';
+  const noPorc   = (r.porc  ||'').toLowerCase() !== 'oui';
+
+  let topClass   = '';
+  let statusTag  = '';
+  if (isHeart) {
+    topClass  = 'top-heart';
+    statusTag = `<span class="ptag ptag-status-heart">♥ Coup de cœur</span>`;
+  } else if (isTested) {
+    topClass  = '';
+    statusTag = `<span class="ptag ptag-status-tested">✓ Testé</span>`;
+  } else {
+    topClass  = 'top-amber';
+    statusTag = `<span class="ptag ptag-status-untested">○ Non testé</span>`;
+  }
+
   return `<div class="popup-wrap">
-    <div class="popup-top">
+    <div class="popup-top ${topClass}">
       <div class="popup-name">${r.nom}</div>
       <div class="popup-tags">
-        <span class="ptag ptag-status-${tested?'tested':'untested'}">${tested?'✓ Testé':'○ Non testé'}</span>
+        ${statusTag}
         ${r.origine ? `<span class="ptag ptag-origine">🌍 ${r.origine}</span>` : ''}
         ${types.map(t=>`<span class="ptag ptag-type">${t}</span>`).join('')}
-        ${r.prix    ? `<span class="ptag ptag-price">${r.prix}</span>`                 : ''}
-        ${r.halal   ? `<span class="ptag ptag-${hk}">☪ ${halalLabel(hk)}</span>`      : ''}
+        ${r.prix    ? `<span class="ptag ptag-price">${r.prix}</span>`            : ''}
+        ${r.halal   ? `<span class="ptag ptag-${hk}">☪ ${halalLabel(hk)}</span>` : ''}
       </div>
     </div>
     <div class="popup-body">
@@ -1007,7 +1046,7 @@ function mkPopup(r) {
       ${(!noAlco||!noPorc) ? `<div class="popup-info"><span class="pi-icon">⚠️</span><span style="font-size:11.5px;color:var(--red)">${[!noAlco?'🍷 Alcool servi':'',!noPorc?'🐷 Porc au menu':''].filter(Boolean).join(' · ')}</span></div>` : ''}
       ${r.recommandation ? `<div class="popup-reco">"${r.recommandation}"</div>` : ''}
       <div class="popup-actions">
-        ${r.gmaps  ? `<a class="pop-btn pop-btn-maps"   href="${r.gmaps}"  target="_blank">🗺 Ouvrir Maps</a>` : ''}
+        ${r.gmaps  ? `<a class="pop-btn pop-btn-maps"   href="${r.gmaps}"  target="_blank">🗺 Ouvrir Maps</a>`       : ''}
         ${r.reseau ? `<a class="pop-btn pop-btn-social" href="${r.reseau}" target="_blank">📸 Réseau social</a>` : ''}
       </div>
     </div>
@@ -1018,27 +1057,44 @@ function mkPopup(r) {
 // CARD
 // ══════════════════════════════════════════
 function mkCard(r) {
-  const tested = r.statut === 'testé';
-  const hk     = halalKey(r.halal);
-  const types  = [r.type1, r.type2, r.type3].filter(Boolean);
-  const noAlco = (r.alcool||'').toLowerCase() !== 'oui';
-  const noPorc = (r.porc  ||'').toLowerCase() !== 'oui';
-  return `<div class="resto-card" onclick="focusCard(${r._idx})">
+  const isHeart  = r.coupDeCoeur;
+  const isTested = r.statut === 'testé';
+  const hk       = halalKey(r.halal);
+  const types    = [r.type1, r.type2, r.type3].filter(Boolean);
+  const noAlco   = (r.alcool||'').toLowerCase() !== 'oui';
+  const noPorc   = (r.porc  ||'').toLowerCase() !== 'oui';
+
+  let badgeClass, badgeLabel;
+  let cardClass = 'resto-card';
+  if (isHeart) {
+    badgeClass = 'badge-heart';
+    badgeLabel = '♥ Coup de cœur';
+    cardClass  += ' card-heart';
+  } else if (isTested) {
+    badgeClass = 'badge-tested';
+    badgeLabel = '✓ Testé';
+  } else {
+    badgeClass = 'badge-untested';
+    badgeLabel = '○ Non testé';
+  }
+
+  return `<div class="${cardClass}" onclick="focusCard(${r._idx})">
     <div class="card-header">
       <div class="card-name">${r.nom}</div>
-      <span class="card-badge ${tested?'badge-tested':'badge-untested'}">${tested?'✓ Testé':'○ Non testé'}</span>
+      <span class="card-badge ${badgeClass}">${badgeLabel}</span>
     </div>
     <div class="card-row">
-      ${r.origine    ? `<span class="card-origine">${r.origine}</span>` : ''}
+      ${r.origine   ? `<span class="card-origine">${r.origine}</span>` : ''}
       ${r.origine && types.length ? `<span class="card-dot"></span>` : ''}
       ${types.length ? `<span class="card-type">${types.join(' · ')}</span>` : ''}
-      ${r.prix       ? `<span class="card-dot"></span><span class="card-price">${r.prix}</span>` : ''}
-      ${r.note       ? `<span class="card-dot"></span><span class="card-stars">${stars(r.note)}</span>` : ''}
+      ${r.prix      ? `<span class="card-dot"></span><span class="card-price">${r.prix}</span>` : ''}
+      ${r.note      ? `<span class="card-dot"></span><span class="card-stars">${stars(r.note)}</span>` : ''}
     </div>
     <div class="card-tags">
+      ${isHeart ? `<span class="card-tag tag-heart">♥ Coup de cœur</span>` : ''}
       ${r.halal ? `<span class="card-tag tag-${hk}">☪ ${halalLabel(hk)}</span>` : ''}
-      ${!noAlco ? `<span class="card-tag tag-alcool">🍷 Alcool</span>` : ''}
-      ${!noPorc ? `<span class="card-tag tag-porc">🐷 Porc</span>`    : ''}
+      ${!noAlco ? `<span class="card-tag tag-alcool">🍷 Alcool</span>`  : ''}
+      ${!noPorc ? `<span class="card-tag tag-porc">🐷 Porc</span>`     : ''}
       ${(noAlco&&noPorc) ? `<span class="card-tag tag-clean">✅ Sans alcool & porc</span>` : ''}
     </div>
     ${r.recommandation ? `<div class="card-reco">"${r.recommandation}"</div>` : ''}
@@ -1064,7 +1120,7 @@ function renderMarkers(data) {
   markers = {};
   data.forEach(r => {
     if (!r.lat || !r.lng) return;
-    const m = L.marker([r.lat, r.lng], { icon: mkIcon(r.statut==='testé') });
+    const m = L.marker([r.lat, r.lng], { icon: mkIcon(r) });
     m.bindPopup(mkPopup(r), { maxWidth:320, minWidth:270 });
     m.addTo(map);
     markers[r._idx] = m;
@@ -1072,7 +1128,7 @@ function renderMarkers(data) {
 }
 
 // ══════════════════════════════════════════
-// FOCUS / SURPRISE
+// FOCUS / ALÉATOIRE
 // ══════════════════════════════════════════
 function focusCard(idx) {
   const r = all[idx];
@@ -1084,11 +1140,11 @@ function focusCard(idx) {
   }
 }
 
-function pickSurprise() {
+function pickAlea() {
   const visible = getFiltered();
   if (!visible.length) { showToast('Aucun restaurant à afficher !'); return; }
   const r = visible[Math.floor(Math.random() * visible.length)];
-  showToast(`🎲 On essaie "${r.nom}" !`);
+  showToast(`✨ On essaie "${r.nom}" !`);
   focusCard(r._idx);
 }
 
@@ -1115,10 +1171,11 @@ function setView(v) {
 // ══════════════════════════════════════════
 function setStatusFilter(type, btn) {
   fp.status = type;
-  document.querySelectorAll('.sfilt').forEach(b => {
-    b.classList.remove('active','active-gold');
-  });
-  btn.classList.add(type==='tested' ? 'active-gold' : 'active');
+  document.querySelectorAll('.sfilt').forEach(b => b.classList.remove('active','active-gold','active-heart','active-amber'));
+  if      (type==='tested')   btn.classList.add('active-gold');
+  else if (type==='heart')    btn.classList.add('active-heart');
+  else if (type==='untested') btn.classList.add('active-amber');
+  else                        btn.classList.add('active');
   applyFilters();
 }
 
@@ -1131,6 +1188,7 @@ function handleOverlayClick(e) { if (e.target.id==='filter-overlay') closeFilter
 
 function syncPanel() {
   setChip('fp-status-chips', fp.status);
+  setChip('fp-heart-chips',  fp.heart);
   document.getElementById('fp-origine').value = fp.origine;
   document.getElementById('fp-type').value    = fp.type;
   document.getElementById('fp-halal').value   = fp.halal;
@@ -1138,34 +1196,46 @@ function syncPanel() {
 
 function setChip(groupId, val) {
   document.getElementById(groupId)?.querySelectorAll('.fp-chip')
-    .forEach(c => c.classList.toggle('active', c.dataset.val===val));
+    .forEach(c => {
+      c.classList.remove('active','active-heart');
+      if (c.dataset.val === val) {
+        c.classList.add(groupId==='fp-heart-chips' && val==='yes' ? 'active-heart' : 'active');
+      }
+    });
 }
 
 function fpChip(btn, key) {
-  btn.closest('.fp-chips').querySelectorAll('.fp-chip').forEach(c=>c.classList.remove('active'));
-  btn.classList.add('active');
+  btn.closest('.fp-chips').querySelectorAll('.fp-chip').forEach(c => c.classList.remove('active','active-heart'));
+  btn.classList.add(key==='heart' && btn.dataset.val==='yes' ? 'active-heart' : 'active');
   fp[key] = btn.dataset.val;
+  // Sync status bar if status chip clicked
   if (key==='status') {
     document.querySelectorAll('.sfilt').forEach((b,i) => {
-      b.classList.remove('active','active-gold');
-      if (['all','tested','untested'][i]===fp.status) {
-        b.classList.add(fp.status==='tested'?'active-gold':'active');
+      b.classList.remove('active','active-gold','active-heart','active-amber');
+      const vals = ['all','tested','untested','heart'];
+      if (vals[i] === fp.status) {
+        if      (fp.status==='tested')   b.classList.add('active-gold');
+        else if (fp.status==='heart')    b.classList.add('active-heart');
+        else if (fp.status==='untested') b.classList.add('active-amber');
+        else                             b.classList.add('active');
       }
     });
   }
 }
 
 function resetFilters() {
-  Object.assign(fp, { status:'all', origine:'', type:'', prix:'', note:'', halal:'', restrictions:'' });
+  Object.assign(fp, { status:'all', heart:'', origine:'', type:'', prix:'', note:'', halal:'', restrictions:'' });
   document.getElementById('search-input').value = '';
   syncPanel();
   document.querySelectorAll('.sfilt').forEach((b,i) => {
-    b.classList.toggle('active', i===0);
-    b.classList.remove('active-gold');
+    b.classList.remove('active','active-gold','active-heart','active-amber');
+    if (i===0) b.classList.add('active');
   });
-  // Reset all chips in filter panel
   document.querySelectorAll('.fp-chips').forEach(g => {
-    g.querySelectorAll('.fp-chip').forEach((c,i)=>c.classList.toggle('active',i===0));
+    g.querySelectorAll('.fp-chip').forEach((c,i) => {
+      c.classList.remove('active','active-heart');
+      if (i===0) c.classList.add('active');
+    });
   });
 }
 
@@ -1180,7 +1250,7 @@ function applyAndClose() {
 
 function updateBadge() {
   const q = document.getElementById('search-input').value.trim();
-  const n = [fp.status!=='all', fp.origine, fp.type, fp.prix, fp.note, fp.halal, fp.restrictions, q].filter(Boolean).length;
+  const n = [fp.status!=='all', fp.heart, fp.origine, fp.type, fp.prix, fp.note, fp.halal, fp.restrictions, q].filter(Boolean).length;
   document.getElementById('filter-badge').textContent = n;
   document.getElementById('filter-trigger-btn').classList.toggle('active', n>0);
 }
@@ -1191,16 +1261,20 @@ function updateBadge() {
 function getFiltered() {
   const q = (document.getElementById('search-input').value||'').toLowerCase().trim();
   return all.filter(r => {
-    if (fp.status==='tested'   && r.statut!=='testé') return false;
-    if (fp.status==='untested' && r.statut==='testé') return false;
+    const isTested = r.statut === 'testé';
+    const isHeart  = r.coupDeCoeur;
+    if (fp.status==='tested'   && !isTested)  return false;
+    if (fp.status==='untested' && isTested)   return false;
+    if (fp.status==='heart'    && !isHeart)   return false;
+    if (fp.heart==='yes'       && !isHeart)   return false;
     if (fp.type) {
       const types = [r.type1,r.type2,r.type3].map(t=>(t||'').toLowerCase());
       if (!types.includes(fp.type.toLowerCase())) return false;
     }
-    if (fp.prix && r.prix!==fp.prix) return false;
-    if (fp.note && (parseFloat(r.note)||0)<parseFloat(fp.note)) return false;
+    if (fp.prix    && r.prix!==fp.prix) return false;
+    if (fp.note    && (parseFloat(r.note)||0)<parseFloat(fp.note)) return false;
     if (fp.origine && (r.origine||'').toLowerCase()!==fp.origine.toLowerCase()) return false;
-    if (fp.halal && halalKey(r.halal)!==fp.halal) return false;
+    if (fp.halal   && halalKey(r.halal)!==fp.halal) return false;
     if (fp.restrictions) {
       const noA = (r.alcool||'').toLowerCase()!=='oui';
       const noP = (r.porc  ||'').toLowerCase()!=='oui';
@@ -1224,16 +1298,12 @@ function applyFilters() {
 }
 
 // ══════════════════════════════════════════
-// CODE POSTAL
-// ══════════════════════════════════════════
-
-// ══════════════════════════════════════════
 // DROPDOWNS
 // ══════════════════════════════════════════
 function populateDropdowns() {
-  const types   = [...new Set(all.flatMap(r=>[r.type1,r.type2,r.type3]).filter(Boolean))].sort();
+  const types    = [...new Set(all.flatMap(r=>[r.type1,r.type2,r.type3]).filter(Boolean))].sort();
   const origines = [...new Set(all.map(r=>r.origine).filter(Boolean))].sort();
-  document.getElementById('fp-type').innerHTML    = `<option value="">Tous les types</option>` + types.map(t=>`<option value="${t}">${t}</option>`).join('');
+  document.getElementById('fp-type').innerHTML    = `<option value="">Tous les types</option>`    + types.map(t=>`<option value="${t}">${t}</option>`).join('');
   document.getElementById('fp-origine').innerHTML = `<option value="">Toutes les origines</option>` + origines.map(o=>`<option value="${o}">${o}</option>`).join('');
 }
 
@@ -1242,8 +1312,10 @@ function populateDropdowns() {
 // ══════════════════════════════════════════
 function updateStats() {
   const tested = all.filter(r=>r.statut==='testé').length;
+  const hearts = all.filter(r=>r.coupDeCoeur).length;
   document.getElementById('count-tested').textContent   = tested;
   document.getElementById('count-untested').textContent = all.length - tested;
+  document.getElementById('count-heart').textContent    = hearts;
 }
 
 // ══════════════════════════════════════════
@@ -1264,25 +1336,33 @@ function parseCSV(text) {
     vals.push(cur.trim());
     const obj={};
     headers.forEach((h,j)=>{ obj[h]=(vals[j]||'').replace(/^"|"$/g,'').trim(); });
+
+    // Parse "coup de coeur" column — accept TRUE/true/1/oui/yes
+    const cdc = (obj['coup de coeur']||obj['coupdecoeur']||obj['coup_de_coeur']||'').toLowerCase();
+    const isHeart = cdc==='true'||cdc==='1'||cdc==='oui'||cdc==='yes';
+
+    const statut = (obj['statut']||'').toLowerCase();
+
     return {
       _idx: i,
-      nom:            obj['nom']            || '',
-      adresse:        obj['adresse']        || '',
+      nom:            obj['nom']             || '',
+      adresse:        obj['adresse']         || '',
       lat:            parseFloat(obj['latitude']  || obj['lat']) || 0,
       lng:            parseFloat(obj['longitude'] || obj['lng'] || obj['lon']) || 0,
-      origine:        obj['origine']        || '',
-      type1:          obj['produit_type1']  || obj['type'] || '',
-      type2:          obj['produit_type2']  || '',
-      type3:          obj['produit_type3']  || '',
-      statut:         (obj['statut']        || '').toLowerCase(),
-      note:           obj['note']           || '',
-      prix:           obj['prix']           || '',
-      halal:          obj['halal']          || '',
-      alcool:         obj['alcool']         || '',
-      porc:           obj['porc']           || '',
-      recommandation: obj['recommandation'] || '',
-      reseau:         obj['reseau']         || obj['instagram'] || '',
-      gmaps:          obj['gmaps']          || `https://maps.google.com?q=${encodeURIComponent(obj['adresse']||obj['nom']||'')}`,
+      origine:        obj['origine']         || '',
+      type1:          obj['produit_type1']   || obj['type'] || '',
+      type2:          obj['produit_type2']   || '',
+      type3:          obj['produit_type3']   || '',
+      statut:         statut,
+      note:           obj['note']            || '',
+      prix:           obj['prix']            || '',
+      halal:          obj['halal']           || '',
+      alcool:         obj['alcool']          || '',
+      porc:           obj['porc']            || '',
+      recommandation: obj['recommandation']  || '',
+      reseau:         obj['reseau']          || obj['instagram'] || '',
+      coupDeCoeur:    isHeart,
+      gmaps:          obj['gmaps'] || `https://maps.google.com?q=${encodeURIComponent(obj['adresse']||obj['nom']||'')}`,
     };
   }).filter(r=>r.nom);
 }
